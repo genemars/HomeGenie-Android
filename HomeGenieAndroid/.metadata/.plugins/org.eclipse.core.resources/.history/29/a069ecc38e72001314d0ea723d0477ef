@@ -1,0 +1,229 @@
+package com.glabs.homegenie.service;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.glabs.homegenie.service.data.Group;
+import com.glabs.homegenie.service.data.Module;
+import com.glabs.homegenie.service.data.ModuleParameter;
+
+import android.net.Credentials;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.util.Base64;
+import android.util.Log;
+
+public class Control {
+
+	private static String _hg_address;
+    private static String _hg_user;  
+    private static String _hg_pass;
+
+	public static void setHgServer(String ip, String user, String pass)
+	{
+		_hg_address = ip;
+		_hg_user = user;
+		_hg_pass = pass;
+	}
+
+	public static void getGroups(GetGroupsCallback callback)
+	{
+		new GetGroupsRequest(callback).execute();
+		
+	}
+
+	public static void getGroupModules(String group, GetGroupModulesCallback callback)
+	{
+		new GetGroupModulesRequest(group, callback).execute();
+		
+	}
+	
+	
+	
+	public interface GetGroupsCallback {
+	    void groupsUpdated(ArrayList<Group> groups);
+	}
+	
+	public static class GetGroupsRequest extends AsyncTask<String, Boolean, String> {
+
+		private String serviceUrl;
+	    //
+	    private GetGroupsCallback callback;
+
+	    public GetGroupsRequest(GetGroupsCallback callback){
+	        this.serviceUrl = "http://" + _hg_address + "/api/HomeAutomation.HomeGenie/Config/Groups.List/";
+	        this.callback = callback;
+	    }
+
+	    @Override
+	    protected String doInBackground(String... params) {
+	        //execute the post
+	    	try {
+	            DefaultHttpClient client = new DefaultHttpClient();
+	            HttpGet getRequest = new HttpGet(serviceUrl);
+	            //getRequest.setHeader("Content-type", "text/json");
+	            //getRequest.setHeader("Accept", "text/json");
+	            if (!_hg_user.equals("") && !_hg_pass.equals(""))
+	            {
+	            	getRequest.addHeader("Authorization", "Basic " + Base64.encodeToString((_hg_user + ":" + _hg_pass).getBytes(), Base64.NO_WRAP));
+	            }
+                //putRequest.setEntity(new StringEntity(params[0]));
+                HttpResponse response = client.execute(getRequest);
+                InputStream content = response.getEntity().getContent();
+	            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+	            String result = "";
+	            String s = "";
+	            while ((s = buffer.readLine()) != null) {
+	                result += s;
+	            }
+	            return result;
+
+            } 
+            catch (UnsupportedEncodingException e) {
+                Log.e("AsyncOperationFailed", e.getMessage());
+                e.printStackTrace();
+            } catch (ClientProtocolException e) {
+                Log.e("AsyncOperationFailed", e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.e("AsyncOperationFailed", e.getMessage());
+                e.printStackTrace();
+            }
+
+	        return "";
+	    }
+
+	    protected void onPostExecute(String jsonString) {
+	        Log.d("MESSAGE", jsonString);
+	        //update the UI with the results
+	        ArrayList<Group> groups = new ArrayList<Group>();
+			try {
+				JSONArray jgroups = new JSONArray(jsonString);
+				for (int g = 0; g < jgroups.length(); g++)
+				{
+					JSONObject jg = (JSONObject)jgroups.get(g);
+					Group group = new Group();
+					group.Name = jg.getString("Name");
+					JSONArray jgmodules = jg.getJSONArray("Modules");
+/*					for(int m = 0; m < jgmodules.length(); m++)
+					{
+						JSONObject jmp = (JSONObject)jgmodules.get(m);
+						group.Properties.add(new ModuleParameter(jmp.getString("Name"), jmp.getString("Value")));
+					}
+*/					groups.add(group);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        callback.groupsUpdated(groups);
+	    }
+	}	
+
+	
+	public interface GetGroupModulesCallback {
+	    void groupModulesUpdated(ArrayList<Module> modules);
+	}
+	
+	public static class GetGroupModulesRequest extends AsyncTask<String, Boolean, String> {
+
+		private String serviceUrl;
+	    //
+	    private GetGroupModulesCallback callback;
+
+	    public GetGroupModulesRequest(String groupName, GetGroupModulesCallback callback){
+	        this.serviceUrl = "http://" + _hg_address + "/api/HomeAutomation.HomeGenie/Config/Groups.ModulesList/" + Uri.encode(groupName);
+	        this.callback = callback;
+	    }
+
+	    @Override
+	    protected String doInBackground(String... params) {
+	        //execute the post
+	    	try {
+	            DefaultHttpClient client = new DefaultHttpClient();
+	            HttpGet getRequest = new HttpGet(serviceUrl);
+	            //getRequest.setHeader("Content-type", "text/json");
+	            //getRequest.setHeader("Accept", "text/json");
+	            if (!_hg_user.equals("") && !_hg_pass.equals(""))
+	            {
+	            	getRequest.addHeader("Authorization", "Basic " + Base64.encodeToString((_hg_user + ":" + _hg_pass).getBytes(), Base64.NO_WRAP));
+	            }
+                //putRequest.setEntity(new StringEntity(params[0]));
+                HttpResponse response = client.execute(getRequest);
+                InputStream content = response.getEntity().getContent();
+	            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+	            String result = "";
+	            String s = "";
+	            while ((s = buffer.readLine()) != null) {
+	                result += s;
+	            }
+	            return result;
+
+            } 
+            catch (UnsupportedEncodingException e) {
+                Log.e("AsyncOperationFailed", e.getMessage());
+                e.printStackTrace();
+            } catch (ClientProtocolException e) {
+                Log.e("AsyncOperationFailed", e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.e("AsyncOperationFailed", e.getMessage());
+                e.printStackTrace();
+            }
+
+	        return "";
+	    }
+
+	    protected void onPostExecute(String jsonString) {
+	        Log.d("MESSAGE", jsonString);
+	        //update the UI with the results
+	        ArrayList<Module> modlist = new ArrayList<Module>();
+			try {
+				JSONArray groupmodules = new JSONArray(jsonString);
+				for (int m = 0; m < groupmodules.length(); m++)
+				{
+					JSONObject jm = (JSONObject)groupmodules.get(m);
+					Module module = new Module();
+					module.Domain = jm.getString("Domain");
+					module.Address = jm.getString("Address");
+					module.Type = jm.getString("Type");
+					module.DeviceType = jm.getString("DeviceType");
+					module.Name = jm.getString("Name");
+					module.Description = jm.getString("Description");
+					module.RoutingNode = jm.getString("RoutingNode");
+//					JSONArray jmproperties = jm.getJSONArray("Properties");
+//					for(int p = 0; p < jmproperties.length(); p++)
+//					{
+//						JSONObject jmp = (JSONObject)jmproperties.get(p);
+//						module.Properties.add(new ModuleParameter(jmp.getString("Name"), jmp.getString("Value")));
+//					}
+					modlist.add(module);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        callback.groupModulesUpdated(modlist);
+	    }
+	}	
+
+	
+		
+	
+}
+

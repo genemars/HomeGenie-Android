@@ -1,0 +1,106 @@
+package com.glabs.homegenie.adapters;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+
+import com.glabs.homegenie.R;
+import com.glabs.homegenie.service.data.Module;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class ModulesAdapter extends ArrayAdapter<Module> {
+	
+	private List<Module> _modules;
+	
+	public ModulesAdapter(Context context, int resource, List<Module> objects) {
+		super(context, resource, objects);
+		_modules = objects;
+	}
+	
+	public void setModules(List<Module> objects)
+	{
+		_modules = objects;
+		this.notifyDataSetChanged();
+	}
+
+	@Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) getContext()
+             .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        convertView = inflater.inflate(R.layout.widget_light, null);
+        
+        Module module = _modules.get(position);
+
+        TextView title = (TextView)convertView.findViewById(R.id.titleText);
+        TextView subtitle = (TextView)convertView.findViewById(R.id.subtitleText);
+        ImageView image = (ImageView)convertView.findViewById(R.id.iconImage);
+        
+        String domain = module.Domain.substring(module.Domain.lastIndexOf('.') + 1);
+        
+        image.setTag("http://192.168.0.2/hg/html/pages/control/widgets/homegenie/generic/images/light_off.png");
+        new DownloadImagesTask().execute(image);        
+        
+        title.setText(module.Name);
+        subtitle.setText(module.Address + " " + domain + " " + module.DeviceType);
+        
+        
+//	        TextView nome = (TextView)convertView.findViewById(R.id.textViewName);
+//	        TextView numero = (TextView)convertView.findViewById(R.id.textViewNumber);
+//	        Contatto c = getItem(position);
+//	        nome.setText(c.getNome()+" "+c.getCognome());
+//	        numero.setText(c.getTelefono());
+        return convertView;
+    }
+
+	
+	public class DownloadImagesTask extends AsyncTask<ImageView, Void, Bitmap> {
+
+		ImageView imageView = null;
+
+		@Override
+		protected Bitmap doInBackground(ImageView... imageViews) {
+		    this.imageView = imageViews[0];
+		    return download_Image((String)imageView.getTag());
+		}
+
+		@Override
+		protected void onPostExecute(Bitmap result) {
+		    imageView.setImageBitmap(result);
+		}
+
+
+		private Bitmap download_Image(String url) {
+			Bitmap bm = null;
+			//
+			try {
+                URL aURL = new URL(url);
+                URLConnection conn = aURL.openConnection();
+                conn.setUseCaches(true);
+                conn.connect();
+                InputStream is = conn.getInputStream();
+                BufferedInputStream bis = new BufferedInputStream(is);
+                bm = BitmapFactory.decodeStream(bis);
+                bis.close();
+                is.close();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
+            return bm;			
+		}
+	}
+	
+}

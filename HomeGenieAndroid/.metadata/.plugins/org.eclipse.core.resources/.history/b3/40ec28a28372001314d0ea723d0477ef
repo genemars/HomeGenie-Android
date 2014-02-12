@@ -1,0 +1,85 @@
+package com.glabs.homegenie;
+
+import com.glabs.homegenie.adapters.ModulesAdapter;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
+
+public final class TestFragment extends Fragment {
+    //private static final String KEY_CONTENT = "TestFragment:Content";
+
+	private ModulesAdapter _madapter = null;
+	
+    public static TestFragment newInstance(Context context, String content) {
+        TestFragment fragment = new TestFragment();
+        fragment.setAdapter(new ModulesAdapter(context, R.layout.widget_generic, null));
+
+//        StringBuilder builder = new StringBuilder();
+//        for (int i = 0; i < 20; i++) {
+//            builder.append(content).append(" ");
+//        }
+//        builder.deleteCharAt(builder.length() - 1);
+//        fragment.mContent = builder.toString();
+
+        return fragment;
+    }
+
+    //private String mContent = "???";
+
+    public void setAdapter(ModulesAdapter ma)
+    {
+    	_madapter = ma;
+    }
+    public ModulesAdapter getAdapter()
+    {
+    	return _madapter;
+    }
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+//
+//        if ((savedInstanceState != null) && savedInstanceState.containsKey(KEY_CONTENT)) {
+//            mContent = savedInstanceState.getString(KEY_CONTENT);
+//        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+//        TextView text = new TextView(getActivity());
+//        text.setGravity(Gravity.CENTER);
+//        text.setText(mContent);
+//        text.setTextSize(20 * getResources().getDisplayMetrics().density);
+//        text.setPadding(20, 20, 20, 20);
+//
+//        LinearLayout layout = new LinearLayout(getActivity());
+//        layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+//        layout.setGravity(Gravity.CENTER);
+//        layout.addView(text);
+
+		if (getView() != null)
+		{
+			ListView lv = (ListView)getView().findViewById(R.id.listView);
+			lv.setAdapter(ma);
+		}
+    	
+    	
+        return inflater.inflate(R.layout.fragment_group, container, false);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //outState.putString(KEY_CONTENT, mContent);
+    }
+}

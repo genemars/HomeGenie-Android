@@ -1,0 +1,59 @@
+package com.glabs.homegenie;
+
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+
+import com.glabs.homegenie.service.data.Group;
+import com.viewpagerindicator.IconPagerAdapter;
+
+class TestFragmentAdapter extends FragmentPagerAdapter implements IconPagerAdapter {
+    private ArrayList<Group> _groups = new ArrayList<Group>();
+    private ArrayList<TestFragment> _fragments = new ArrayList<TestFragment>();
+
+    public void setGroups(ArrayList<Group> groups)
+    {
+    	this._groups = groups;
+    	this._fragments.clear();
+    	for(Group g : groups)
+    	{
+    		_fragments.add(TestFragment.newInstance(g.Name));
+    	}
+    	notifyDataSetChanged();
+    	
+    }
+    
+    public Group getGroup(int position)
+    {
+    	return _groups.get(position);
+    }
+    
+    public TestFragmentAdapter(FragmentManager fm) {
+        super(fm);
+    }
+
+    @Override
+    public TestFragment getItem(int position) {
+    	
+        return _fragments.get(position);
+    }
+
+    @Override
+    public int getCount() {
+        return _groups.size();
+    }
+
+    @Override
+    public CharSequence getPageTitle(int position) {
+      return getGroup(position).Name;
+    }
+
+    @Override
+    public int getIconResId(int index) {
+      return 0; //ICONS[index % ICONS.length];
+    }
+    
+}

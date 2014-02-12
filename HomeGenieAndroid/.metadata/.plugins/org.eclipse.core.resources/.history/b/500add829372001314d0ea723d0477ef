@@ -1,0 +1,55 @@
+package com.glabs.homegenie;
+
+import java.util.ArrayList;
+
+import com.glabs.homegenie.adapters.ModulesAdapter;
+import com.glabs.homegenie.service.data.Module;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
+
+public final class TestFragment extends Fragment {
+	private ModulesAdapter _madapter = null;
+	private View _view = null; 
+
+    public ModulesAdapter getAdapter()
+    {
+    	return _madapter;
+    }
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+    	if (_view == null)
+    	{
+    		_view = inflater.inflate(R.layout.fragment_group, container, false);
+    	}
+		ListView lv = (ListView)_view.findViewById(R.id.listView);
+		if (_madapter == null)
+		{
+			_madapter = new ModulesAdapter(_view.getContext(), R.layout.widget_light, new ArrayList<Module>());
+	        lv.setAdapter(_madapter);		
+		}
+        return _view;
+        
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+}

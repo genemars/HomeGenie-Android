@@ -1,0 +1,18 @@
+package com.glabs.homegenie.service.data;
+
+import java.util.ArrayList;
+
+public class Module {
+	
+	public String Domain;
+	public String Address;
+	public String Name;
+	public String Description;
+	public String Type;
+	public String DeviceType;
+	public ArrayList<ModuleParameter> Properties = new ArrayList<ModuleParameter>();
+	
+	public String RoutingNode;
+
+	public View View;
+}

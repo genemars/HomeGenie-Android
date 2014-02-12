@@ -1,0 +1,5 @@
+INDEX VERSION 1.126+C:\Users\Gene\Documents\Progetti\Personali\HomeGenieAndroid\.metadata\.plugins\org.eclipse.jdt.core
+3884787831.index
+888140272.index
+1531412002.index
+3019804175.index

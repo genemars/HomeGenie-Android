@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="Select a media to play"/>
+
+    <ListView
+        android:id="@+id/filesList"
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_margin="8dp"
+        android:background="@android:color/background_dark"
+        />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Play to..."/>
+
+        <Spinner
+            android:id="@+id/playto"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
+            ></Spinner>
+
+
+    </LinearLayout>
+
+</LinearLayout>

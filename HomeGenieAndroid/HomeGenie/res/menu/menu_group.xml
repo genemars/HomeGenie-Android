@@ -1,0 +1,51 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:id="@+id/menu_system"
+        android:icon="@drawable/ic_action_settings"
+        android:title="Options"
+        android:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/action_settings"
+                android:icon="@android:drawable/ic_menu_preferences"
+                android:showAsAction="ifRoom"
+                android:menuCategory="secondary"
+                android:title="Settings" />
+            <item
+                android:id="@+id/action_admin"
+                android:showAsAction="ifRoom"
+                android:icon="@drawable/ic_action_web_site"
+                android:menuCategory="secondary"
+                android:title="Admin"/>
+            <item
+                android:id="@+id/action_help"
+                android:showAsAction="ifRoom"
+                android:icon="@drawable/ic_action_help"
+                android:menuCategory="secondary"
+                android:title="Help"/>
+            <item
+                android:id="@+id/action_quit"
+                android:showAsAction="ifRoom"
+                android:icon="@drawable/ic_action_cancel"
+                android:menuCategory="secondary"
+                android:title="Quit"/>
+        </menu>
+    </item>
+
+    <item android:id="@+id/action_recognition"
+        android:icon="@drawable/ic_action_mic"
+        android:title="Control"
+        android:showAsAction="always">
+        <menu>
+        </menu>
+    </item>
+
+    <item android:id="@+id/menu_automation"
+        android:icon="@drawable/ic_action_play_over_video"
+        android:title="Actions"
+        android:showAsAction="always">
+        <menu>
+        </menu>
+    </item>
+
+</menu>

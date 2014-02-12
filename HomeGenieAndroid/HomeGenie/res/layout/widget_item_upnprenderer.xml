@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    >
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        >
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="UPnP Media Renderer"
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+        <TextView
+            android:id="@+id/subtitleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Media Server"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:alpha="0.5"
+            />
+
+        <TextView
+            android:id="@+id/infoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Monday, 15 Aug 2013 15:44:22"
+            android:alpha="0.3"
+            android:visibility="gone"
+            />
+
+        <com.glabs.homegenie.components.FlowLayout
+            android:id="@+id/propsContainer"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right">
+        </com.glabs.homegenie.components.FlowLayout>
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@android:drawable/alert_dark_frame"
+            >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_margin="8dp"
+                android:weightSum="1.0">
+
+                <TextView
+                    android:id="@+id/mediaUri"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:scrollHorizontally="true"
+                    android:ellipsize="start"
+                    android:singleLine="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginRight="5dp"
+                    android:layout_weight="0.5"/>
+
+                <TextView
+                    android:id="@+id/mediaPosition"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:scrollHorizontally="false"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:gravity="right"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_marginLeft="5dp"
+                    android:layout_weight="0.5"/>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                >
+
+                <Button
+                    android:id="@+id/muteButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@android:drawable/ic_lock_silent_mode_off"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center"/>
+                <SeekBar
+                    android:id="@+id/volumeSlider"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:gravity="center"
+                >
+
+
+                <Button
+                    android:id="@+id/stopButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/ic_media_stop"
+                    android:layout_margin="10dp"
+                    />
+                <Button
+                    android:id="@+id/prevButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/ic_media_previous"
+                    android:layout_margin="10dp"
+                    />
+                <Button
+                    android:id="@+id/playButton"
+                    android:layout_width="32dp"
+                    android:layout_height="28dp"
+                    android:background="@drawable/ic_media_play"
+                    android:layout_margin="10dp"
+                    />
+                <Button
+                    android:id="@+id/nextButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/ic_media_next"
+                    android:layout_margin="10dp"
+                    />
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iconImage"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:scaleType="fitCenter"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="6dp"
+        android:layout_marginRight="12dp"
+        />
+
+</RelativeLayout>
