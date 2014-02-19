@@ -90,7 +90,12 @@ public class GenericWidgetAdapter {
         {
             fmWidget = new ColorLightDialogFragment();
         }
-        else if (devtype.equals(Module.DeviceTypes.Dimmer) || devtype.equals(Module.DeviceTypes.Siren) || devtype.equals(Module.DeviceTypes.Switch) || devtype.equals(Module.DeviceTypes.Light))
+        else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
+                 devtype.equals(Module.DeviceTypes.Siren) ||
+                 devtype.equals(Module.DeviceTypes.Switch) ||
+                 devtype.equals(Module.DeviceTypes.Light) ||
+                 devtype.equals(Module.DeviceTypes.Shutter) ||
+                 devtype.equals(Module.DeviceTypes.Fan))
         {
             fmWidget = new DimmerLightDialogFragment();
         }
@@ -174,6 +179,8 @@ public class GenericWidgetAdapter {
             updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(doorwindowProp.UpdateTime);
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
+            // hide Status.Level
+            _updatePropertyBox(convertView, R.id.propLevel, "Status", "");
         }
         //
         ModuleParameter meterWatts = module.getParameter("Meter.Watts");
@@ -258,13 +265,6 @@ public class GenericWidgetAdapter {
         {
             widget = widgetProp.Value;
         }
-        if (doorwindowProp != null && doorwindowProp.Value != null)
-        {
-            try
-            {
-                doorwindow = Double.parseDouble(doorwindowProp.Value);
-            } catch (Exception e) { }
-        }
         if (statusLevel != null && statusLevel.Value != null)
         {
             try
@@ -272,6 +272,22 @@ public class GenericWidgetAdapter {
                 level = Double.parseDouble(statusLevel.Value);
             } catch (Exception e) { }
             if (level != 0D)
+            {
+                statussuffix = "on";
+            }
+            else
+            {
+                statussuffix = "off";
+            }
+        }
+        //
+        if (doorwindowProp != null && doorwindowProp.Value != null)
+        {
+            try
+            {
+                doorwindow = Double.parseDouble(doorwindowProp.Value);
+            } catch (Exception e) { }
+            if (doorwindow != 0D)
             {
                 statussuffix = "on";
             }

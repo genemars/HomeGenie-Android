@@ -66,6 +66,13 @@ public class GroupsViewFragment extends Fragment {
     private int mCurrentGroup = 0;
     private ArrayList<Module> mGroupPrograms = new ArrayList<Module>();
     protected Hashtable<Integer, ModulesAdapter> mAdapterList = new Hashtable<Integer, ModulesAdapter>();
+    //
+    // Compatibility API 8
+    // these MenuItem constants were not available
+    // so we reproduce them using the same values of API 11
+    final int SHOW_AS_ACTION_IF_ROOM = 1;
+    final int SHOW_AS_ACTION_WITH_TEXT = 4;
+    final int SHOW_AS_ACTION_NEVER = 0;
 
     public void loadGroups(final Control.GetGroupsCallback callback)
     {
@@ -76,6 +83,7 @@ public class GroupsViewFragment extends Fragment {
                 if (success)
                 {
                     mAdapter.setGroups(groups);
+                    UpdateJumpToGroupMenu(groups);
                 }
                 callback.groupsUpdated(success, groups);
             }
@@ -125,6 +133,38 @@ public class GroupsViewFragment extends Fragment {
         super.onStart();
     }
 
+    public void UpdateJumpToGroupMenu(ArrayList<Group> groups)
+    {
+        StartActivity rootactivity = (StartActivity)getActivity();
+        Menu menu = rootactivity.getActionMenu();
+        if (menu != null)
+        {
+            MenuItem jumpto = menu.findItem(R.id.action_jumpto);
+            Menu submenu = jumpto.getSubMenu();
+            if (submenu == null) return;
+            //
+            submenu.removeGroup(Menu.NONE);
+            if (groups.size() > 0)
+            {
+                int gid = 0;
+                for(Group group : groups)
+                {
+                    MenuItem grp = submenu.add(Menu.NONE, gid, gid, group.Name);
+//                    prg.setIcon(R.drawable.ic_action_flash_on);
+                    MenuCompat.setShowAsAction(grp, SHOW_AS_ACTION_IF_ROOM | SHOW_AS_ACTION_WITH_TEXT);
+                    grp.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem menuItem) {
+                            mIndicator.setCurrentItem(menuItem.getItemId());
+                            return true;
+                        }
+                    });
+                    gid++;
+                }
+            }
+        }
+    }
+
     public void UpdateCurrentGroupMenu()
     {
         StartActivity rootactivity = (StartActivity)getActivity();
@@ -135,13 +175,6 @@ public class GroupsViewFragment extends Fragment {
             automation.setEnabled(false);
             Menu submenu = automation.getSubMenu();
             if (submenu == null) return;
-            //
-            // Compatibility API 8
-            // these MenuItem constants were not available
-            // so we reproduce them using the same values of API 11
-            final int SHOW_AS_ACTION_IF_ROOM = 1;
-            final int SHOW_AS_ACTION_WITH_TEXT = 4;
-            final int SHOW_AS_ACTION_NEVER = 0;
             //
             submenu.removeGroup(Menu.NONE);
             if (mGroupPrograms.size() > 0)

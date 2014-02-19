@@ -39,7 +39,6 @@ public class Module {
         Switch,
         Temperature,
         DoorWindow,
-        Shutters,
         Program,
         Thermostat, Fan, Shutter, Siren
     }
