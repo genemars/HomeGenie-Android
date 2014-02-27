@@ -36,6 +36,7 @@ import com.glabs.homegenie.service.data.Module;
 import com.glabs.homegenie.service.data.ModuleParameter;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.ColorLightDialogFragment;
+import com.glabs.homegenie.widgets.ColorLightRGBDialogFragment;
 import com.glabs.homegenie.widgets.DimmerLightDialogFragment;
 import com.glabs.homegenie.widgets.ModuleControlActivity;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
@@ -90,12 +91,16 @@ public class GenericWidgetAdapter {
         {
             fmWidget = new ColorLightDialogFragment();
         }
+        else if (widget != null && widget.Value.equals("zwave/fibaro/rgbw"))
+        {
+            fmWidget = new ColorLightRGBDialogFragment();
+        }
         else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
-                 devtype.equals(Module.DeviceTypes.Siren) ||
-                 devtype.equals(Module.DeviceTypes.Switch) ||
-                 devtype.equals(Module.DeviceTypes.Light) ||
-                 devtype.equals(Module.DeviceTypes.Shutter) ||
-                 devtype.equals(Module.DeviceTypes.Fan))
+                devtype.equals(Module.DeviceTypes.Siren) ||
+                devtype.equals(Module.DeviceTypes.Switch) ||
+                devtype.equals(Module.DeviceTypes.Light) ||
+                devtype.equals(Module.DeviceTypes.Shutter) ||
+                devtype.equals(Module.DeviceTypes.Fan))
         {
             fmWidget = new DimmerLightDialogFragment();
         }
@@ -367,7 +372,7 @@ public class GenericWidgetAdapter {
             {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/socket_" + statussuffix + ".png";
             }
-            else if (widget.equals("homegenie/generic/light") || widget.equals("homegenie/generic/dimmer") || widget.equals("homegenie/generic/colorlight"))
+            else if (widget.equals("homegenie/generic/light") || widget.equals("homegenie/generic/dimmer") || widget.equals("homegenie/generic/colorlight") || widget.equals("zwave/fibaro/rgbw"))
             {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/light_" + statussuffix + ".png";
             }
