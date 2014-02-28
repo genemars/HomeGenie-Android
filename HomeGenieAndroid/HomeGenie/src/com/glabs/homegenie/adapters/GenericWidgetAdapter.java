@@ -56,180 +56,6 @@ public class GenericWidgetAdapter {
         module.Adapter = this;
     }
 
-    public View getView(LayoutInflater inflater) {
-        View v = _module.View;
-        if (v == null) {
-            v = inflater.inflate(R.layout.widget_item_generic, null);
-            _module.View = v;
-            v.setTag(_module);
-        } else {
-            v = _module.View;
-        }
-        return v;
-    }
-
-    public ModuleDialogFragment getControlFragment() {
-        ModuleDialogFragment fmWidget = null;
-        ModuleParameter widget = _module.getParameter("Widget.DisplayModule");
-        Module.DeviceTypes devtype = Module.DeviceTypes.Generic;
-        try {
-            devtype = Enum.valueOf(Module.DeviceTypes.class, _module.DeviceType);
-        } catch (Exception e) {
-            // TODO handle exception
-        }
-        //
-        if (widget != null && widget.Value.equals("homegenie/generic/colorlight")) {
-            fmWidget = new ColorLightDialogFragment();
-        } else if (widget != null && widget.Value.equals("zwave/fibaro/rgbw")) {
-            fmWidget = new ColorLightRGBDialogFragment();
-        } else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
-                devtype.equals(Module.DeviceTypes.Siren) ||
-                devtype.equals(Module.DeviceTypes.Switch) ||
-                devtype.equals(Module.DeviceTypes.Light) ||
-                devtype.equals(Module.DeviceTypes.Shutter) ||
-                devtype.equals(Module.DeviceTypes.Fan)) {
-            fmWidget = new DimmerLightDialogFragment();
-        }
-
-        return fmWidget;
-    }
-
-
-    public Intent getControlActivityIntent(Module module) {
-        return null;
-    }
-
-
-    public void updateViewModel() {
-        if (_module.View == null) return;
-
-        View convertView = _module.View;
-        Module module = _module;
-
-        TextView title = (TextView) convertView.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) convertView.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) convertView.findViewById(R.id.infoText);
-
-        title.setText(module.getDisplayName());
-        subtitle.setText(module.getDisplayAddress());
-        infotext.setVisibility(View.INVISIBLE);
-        //
-        String status = "";
-        String updateTimestamp = "";
-        ModuleParameter statusLevel = module.getParameter("Status.Level");
-        if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals("")) {
-            if (!statusLevel.Value.equals("0")) {
-                status = "on";
-                try {
-                    Integer level = (int) (Double.parseDouble(statusLevel.Value) * 100);
-                    if (level < 100) {
-                        status = level.toString() + "%";
-                    }
-                } catch (NumberFormatException nfe) {
-                }
-            } else {
-                status = "off";
-            }
-            if (statusLevel != null) {
-                updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(statusLevel.UpdateTime);
-                infotext.setText(updateTimestamp);
-                infotext.setVisibility(View.VISIBLE);
-            }
-        }
-        _updatePropertyBox(convertView, R.id.propLevel, "Status", status.toUpperCase());
-        //
-        View colorBox = convertView.findViewById(R.id.propColorHsb);
-        colorBox.setVisibility(View.GONE);
-        ModuleParameter statusColor = module.getParameter("Status.ColorHsb");
-        if (statusColor != null && !statusColor.Value.equals("")) {
-            try {
-                String[] sHsb = statusColor.Value.split(",");
-                float[] hsb = new float[3];
-                hsb[0] = Float.parseFloat(sHsb[0]) * 360f;
-                hsb[1] = Float.parseFloat(sHsb[1]);
-                hsb[2] = Float.parseFloat(sHsb[2]);
-                View colorView = colorBox.findViewById(R.id.propColor);
-                colorView.setBackgroundColor(Color.HSVToColor(hsb));
-                //
-                colorBox.setVisibility(View.VISIBLE);
-            } catch (Exception e) {
-            }
-        }
-        //
-        ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
-        if (doorwindowProp != null && doorwindowProp.Value != null) {
-            updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(doorwindowProp.UpdateTime);
-            infotext.setText(updateTimestamp);
-            infotext.setVisibility(View.VISIBLE);
-            // hide Status.Level
-            _updatePropertyBox(convertView, R.id.propLevel, "Status", "");
-        }
-        //
-        ModuleParameter meterWatts = module.getParameter("Meter.Watts");
-        String watts = "";
-        if (meterWatts != null) watts = Module.getFormattedNumber(meterWatts.Value);
-        _updatePropertyBox(convertView, R.id.propWatt, "Watt", watts);
-        //
-        ModuleParameter statusBattery = module.getParameter("Status.Battery");
-        String battery = "";
-        if (statusBattery != null) battery = Module.getFormattedNumber(statusBattery.Value);
-        _updatePropertyBox(convertView, R.id.propBattery, "Bat.%", battery);
-        //
-        ModuleParameter sensorTemperature = module.getParameter("Sensor.Temperature");
-        String temperature = "";
-        if (sensorTemperature != null)
-            temperature = Module.getFormattedNumber(sensorTemperature.Value);
-        _updatePropertyBox(convertView, R.id.propTemperature, "Temp.℃", temperature);
-        //
-        ModuleParameter sensorHumidity = module.getParameter("Sensor.Humidity");
-        String humidity = "";
-        if (sensorHumidity != null) humidity = Module.getFormattedNumber(sensorHumidity.Value);
-        _updatePropertyBox(convertView, R.id.propHumidity, "Hum.%", humidity);
-        //
-        ModuleParameter sensorLuminance = module.getParameter("Sensor.Luminance");
-        String luminance = "";
-        if (sensorLuminance != null) luminance = Module.getFormattedNumber(sensorLuminance.Value);
-        _updatePropertyBox(convertView, R.id.propLuminance, "Lum.%", luminance);
-        //
-        ModuleParameter sensorDoorWindow = module.getParameter("Sensor.DoorWindow");
-        String doorwindow = "";
-        if (sensorDoorWindow != null && !sensorDoorWindow.Value.equals("")) {
-            doorwindow = sensorDoorWindow.Value;
-            if (doorwindow != null && !doorwindow.equals("")) {
-                double dw = module.getDoubleValue(doorwindow);
-                if (dw > 0)
-                    doorwindow = "OPENED";
-                else
-                    doorwindow = "CLOSED";
-            }
-        }
-        _updatePropertyBox(convertView, R.id.propDoorWindow, "Status", doorwindow, 12);
-        //
-        ModuleParameter sensorMotion = module.getParameter("Sensor.MotionDetect");
-        String motiondetected = "";
-        if (sensorMotion != null) motiondetected = Module.getDisplayLevel(sensorMotion.Value);
-        _updatePropertyBox(convertView, R.id.propMotionDetect, "Motion", motiondetected);
-        //
-        final ImageView image = (ImageView) convertView.findViewById(R.id.iconImage);
-        final String timestamp = updateTimestamp;
-        if (image.getTag() == null || !image.getTag().equals(timestamp) && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
-            AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
-                @Override
-                public void imageDownloadFailed(String imageUrl) {
-                }
-
-                @Override
-                public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
-                    image.setTag(timestamp);
-                }
-            });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(module), image);
-            //image.setTag(asyncDownloadTask);
-        }
-
-    }
-
-
     public static String getModuleIcon(Module module) {
         ModuleParameter widgetProp = module.getParameter("Widget.DisplayModule");
         ModuleParameter statusLevel = module.getParameter("Status.Level");
@@ -365,6 +191,192 @@ public class GenericWidgetAdapter {
         return imageurl;
     }
 
+    public View getView(LayoutInflater inflater) {
+        View v = _module.View;
+        if (v == null) {
+            v = inflater.inflate(R.layout.widget_item_generic, null);
+            _module.View = v;
+            v.setTag(_module);
+        } else {
+            v = _module.View;
+        }
+        return v;
+    }
+
+    public ModuleDialogFragment getControlFragment() {
+        ModuleDialogFragment fmWidget = null;
+        ModuleParameter widget = _module.getParameter("Widget.DisplayModule");
+        Module.DeviceTypes devtype = Module.DeviceTypes.Generic;
+        try {
+            devtype = Enum.valueOf(Module.DeviceTypes.class, _module.DeviceType);
+        } catch (Exception e) {
+            // TODO handle exception
+        }
+        //
+        if (widget != null && widget.Value.equals("homegenie/generic/colorlight")) {
+            fmWidget = new ColorLightDialogFragment();
+        } else if (widget != null && widget.Value.equals("zwave/fibaro/rgbw")) {
+            fmWidget = new ColorLightRGBDialogFragment();
+        } else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
+                devtype.equals(Module.DeviceTypes.Siren) ||
+                devtype.equals(Module.DeviceTypes.Switch) ||
+                devtype.equals(Module.DeviceTypes.Light) ||
+                devtype.equals(Module.DeviceTypes.Shutter) ||
+                devtype.equals(Module.DeviceTypes.Fan)) {
+            fmWidget = new DimmerLightDialogFragment();
+        }
+
+        return fmWidget;
+    }
+
+    public Intent getControlActivityIntent(Module module) {
+        return null;
+    }
+
+    public void updateViewModel() {
+        if (_module.View == null) return;
+
+        View convertView = _module.View;
+        Module module = _module;
+
+        TextView title = (TextView) convertView.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) convertView.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) convertView.findViewById(R.id.infoText);
+
+        title.setText(module.getDisplayName());
+        subtitle.setText(module.getDisplayAddress());
+        infotext.setVisibility(View.INVISIBLE);
+        //
+        String status = "";
+        String updateTimestamp = "";
+        ModuleParameter statusLevel = module.getParameter("Status.Level");
+        if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals("")) {
+            if (!statusLevel.Value.equals("0")) {
+                status = "on";
+                try {
+                    Integer level = (int) (Double.parseDouble(statusLevel.Value) * 100);
+                    if (level < 100) {
+                        status = level.toString() + "%";
+                    }
+                } catch (NumberFormatException nfe) {
+                }
+            } else {
+                status = "off";
+            }
+            if (statusLevel != null) {
+                updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(statusLevel.UpdateTime);
+                infotext.setText(updateTimestamp);
+                infotext.setVisibility(View.VISIBLE);
+            }
+        }
+        _updatePropertyBox(convertView, R.id.propLevel, "Status", status.toUpperCase());
+        //
+        View colorBox = convertView.findViewById(R.id.propColorHsb);
+        colorBox.setVisibility(View.GONE);
+        ModuleParameter statusColor = module.getParameter("Status.ColorHsb");
+        if (statusColor != null && !statusColor.Value.equals("")) {
+            ModuleParameter widget = module.getParameter("Widget.DisplayModule");
+            if (widget != null && widget.Value.equals("zwave/fibaro/rgbw")) {
+                try {
+                    String[] sRgb = statusColor.Value.split(",");
+                    int red = Integer.parseInt(sRgb[0]);
+                    int green = Integer.parseInt(sRgb[1]);
+                    int blue = Integer.parseInt(sRgb[2]);
+                    int color = Color.rgb(red, green, blue);
+                    View colorView = colorBox.findViewById(R.id.propColor);
+                    colorView.setBackgroundColor(color);
+                    //
+                    colorBox.setVisibility(View.VISIBLE);
+                } catch (Exception e) {
+                }
+            } else {
+                try {
+                    String[] sHsb = statusColor.Value.split(",");
+                    float[] hsb = new float[3];
+                    hsb[0] = Float.parseFloat(sHsb[0]) * 360f;
+                    hsb[1] = Float.parseFloat(sHsb[1]);
+                    hsb[2] = Float.parseFloat(sHsb[2]);
+                    View colorView = colorBox.findViewById(R.id.propColor);
+                    colorView.setBackgroundColor(Color.HSVToColor(hsb));
+                    //
+                    colorBox.setVisibility(View.VISIBLE);
+                } catch (Exception e) {
+                }
+            }
+        }
+        //
+        ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
+        if (doorwindowProp != null && doorwindowProp.Value != null) {
+            updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(doorwindowProp.UpdateTime);
+            infotext.setText(updateTimestamp);
+            infotext.setVisibility(View.VISIBLE);
+            // hide Status.Level
+            _updatePropertyBox(convertView, R.id.propLevel, "Status", "");
+        }
+        //
+        ModuleParameter meterWatts = module.getParameter("Meter.Watts");
+        String watts = "";
+        if (meterWatts != null) watts = Module.getFormattedNumber(meterWatts.Value);
+        _updatePropertyBox(convertView, R.id.propWatt, "Watt", watts);
+        //
+        ModuleParameter statusBattery = module.getParameter("Status.Battery");
+        String battery = "";
+        if (statusBattery != null) battery = Module.getFormattedNumber(statusBattery.Value);
+        _updatePropertyBox(convertView, R.id.propBattery, "Bat.%", battery);
+        //
+        ModuleParameter sensorTemperature = module.getParameter("Sensor.Temperature");
+        String temperature = "";
+        if (sensorTemperature != null)
+            temperature = Module.getFormattedNumber(sensorTemperature.Value);
+        _updatePropertyBox(convertView, R.id.propTemperature, "Temp.℃", temperature);
+        //
+        ModuleParameter sensorHumidity = module.getParameter("Sensor.Humidity");
+        String humidity = "";
+        if (sensorHumidity != null) humidity = Module.getFormattedNumber(sensorHumidity.Value);
+        _updatePropertyBox(convertView, R.id.propHumidity, "Hum.%", humidity);
+        //
+        ModuleParameter sensorLuminance = module.getParameter("Sensor.Luminance");
+        String luminance = "";
+        if (sensorLuminance != null) luminance = Module.getFormattedNumber(sensorLuminance.Value);
+        _updatePropertyBox(convertView, R.id.propLuminance, "Lum.%", luminance);
+        //
+        ModuleParameter sensorDoorWindow = module.getParameter("Sensor.DoorWindow");
+        String doorwindow = "";
+        if (sensorDoorWindow != null && !sensorDoorWindow.Value.equals("")) {
+            doorwindow = sensorDoorWindow.Value;
+            if (doorwindow != null && !doorwindow.equals("")) {
+                double dw = module.getDoubleValue(doorwindow);
+                if (dw > 0)
+                    doorwindow = "OPENED";
+                else
+                    doorwindow = "CLOSED";
+            }
+        }
+        _updatePropertyBox(convertView, R.id.propDoorWindow, "Status", doorwindow, 12);
+        //
+        ModuleParameter sensorMotion = module.getParameter("Sensor.MotionDetect");
+        String motiondetected = "";
+        if (sensorMotion != null) motiondetected = Module.getDisplayLevel(sensorMotion.Value);
+        _updatePropertyBox(convertView, R.id.propMotionDetect, "Motion", motiondetected);
+        //
+        final ImageView image = (ImageView) convertView.findViewById(R.id.iconImage);
+        final String timestamp = updateTimestamp;
+        if (image.getTag() == null || !image.getTag().equals(timestamp) && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
+            AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
+                @Override
+                public void imageDownloadFailed(String imageUrl) {
+                }
+
+                @Override
+                public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
+                    image.setTag(timestamp);
+                }
+            });
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(module), image);
+            //image.setTag(asyncDownloadTask);
+        }
+
+    }
 
     protected void _updatePropertyBox(View convertView, int boxResId, String label, String value) {
         _updatePropertyBox(convertView, boxResId, label, value, 0);
