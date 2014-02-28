@@ -25,9 +25,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Window;
-import android.webkit.HttpAuthHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -54,7 +52,7 @@ public class WebActivity extends Activity {
         Intent intent = getIntent();
         final String user = intent.getStringExtra("Username");
         final String pass = intent.getStringExtra("Password");
-        final String loadurl =  intent.getStringExtra("URL");
+        final String loadurl = intent.getStringExtra("URL");
 
         _webbrowser = (WebView) findViewById(R.id.webview);
         _webbrowser.setWebChromeClient(new WebChromeClient());
@@ -69,10 +67,9 @@ public class WebActivity extends Activity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         //
-        if (user != null && pass != null && !pass.equals(""))
-        {
+        if (user != null && pass != null && !pass.equals("")) {
             final String usernameRandomPassword = user + ":" + pass;
-            _webbrowser.setWebViewClient(new WebViewClient(){
+            _webbrowser.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
@@ -81,7 +78,8 @@ public class WebActivity extends Activity {
                         String authorization = "Basic " + Base64.encodeToString(usernameRandomPassword.getBytes("UTF-8"), Base64.NO_WRAP);
                         map.put("Authorization", authorization);
                         view.loadUrl(url, map);
-                    } catch (UnsupportedEncodingException e) {}
+                    } catch (UnsupportedEncodingException e) {
+                    }
 
                     return true;
                 }
@@ -91,11 +89,10 @@ public class WebActivity extends Activity {
                 String authorization = "Basic " + Base64.encodeToString(usernameRandomPassword.getBytes("UTF-8"), Base64.NO_WRAP);
                 map.put("Authorization", authorization);
                 _webbrowser.loadUrl(loadurl, map);
-            } catch (UnsupportedEncodingException e) {}
-        }
-        else
-        {
-            _webbrowser.setWebViewClient(new WebViewClient(){
+            } catch (UnsupportedEncodingException e) {
+            }
+        } else {
+            _webbrowser.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     view.loadUrl(url);

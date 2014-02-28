@@ -24,7 +24,14 @@ package com.glabs.homegenie.widgets;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.glabs.homegenie.adapters.*;
+import com.glabs.homegenie.adapters.CameraWidgetAdapter;
+import com.glabs.homegenie.adapters.EarthToolsWidgetAdapter;
+import com.glabs.homegenie.adapters.GenericWidgetAdapter;
+import com.glabs.homegenie.adapters.MediaRendererWidgetAdapter;
+import com.glabs.homegenie.adapters.MediaServerWidgetAdapter;
+import com.glabs.homegenie.adapters.SecurityWidgetAdapter;
+import com.glabs.homegenie.adapters.StatusWidgetAdapter;
+import com.glabs.homegenie.adapters.WundergroundWidgetAdapter;
 import com.glabs.homegenie.service.data.Module;
 import com.glabs.homegenie.service.data.ModuleParameter;
 
@@ -35,39 +42,23 @@ public class ModuleWidgetHolder {
 
     private GenericWidgetAdapter _adapter;
 
-    public ModuleWidgetHolder(Module module)
-    {
+    public ModuleWidgetHolder(Module module) {
         ModuleParameter widgetParam = module.getParameter("Widget.DisplayModule");
-        if (widgetParam != null && widgetParam.Value.equals("weather/earthtools/sundata"))
-        {
+        if (widgetParam != null && widgetParam.Value.equals("weather/earthtools/sundata")) {
             _adapter = new EarthToolsWidgetAdapter(module);
-        }
-        else if (widgetParam != null && widgetParam.Value.equals("weather/wunderground/conditions"))
-        {
+        } else if (widgetParam != null && widgetParam.Value.equals("weather/wunderground/conditions")) {
             _adapter = new WundergroundWidgetAdapter(module);
-        }
-        else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/securitysystem"))
-        {
+        } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/securitysystem")) {
             _adapter = new SecurityWidgetAdapter(module);
-        }
-        else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/status"))
-        {
+        } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/status")) {
             _adapter = new StatusWidgetAdapter(module);
-        }
-        else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/camerainput"))
-        {
+        } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/camerainput")) {
             _adapter = new CameraWidgetAdapter(module);
-        }
-        else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/mediaserver"))
-        {
+        } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/mediaserver")) {
             _adapter = new MediaServerWidgetAdapter(module);
-        }
-        else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/mediareceiver"))
-        {
+        } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/mediareceiver")) {
             _adapter = new MediaRendererWidgetAdapter(module);
-        }
-        else
-        {
+        } else {
             _adapter = new GenericWidgetAdapter(module);
         }
     }

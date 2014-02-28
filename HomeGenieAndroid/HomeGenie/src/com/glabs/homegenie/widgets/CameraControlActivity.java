@@ -24,7 +24,6 @@ package com.glabs.homegenie.widgets;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,18 +50,17 @@ public class CameraControlActivity extends ModuleControlActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.widget_control_camera);
 
-        TextView title = (TextView)findViewById(R.id.title);
+        TextView title = (TextView) findViewById(R.id.title);
         title.setText(_module.getDisplayName());
 
         //
         // get Image.URL property
         _imageurl = _module.getParameter("Image.URL");
-        _image = (ImageView)findViewById(R.id.image);
+        _image = (ImageView) findViewById(R.id.image);
     }
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         this.finish();
         overridePendingTransition(R.anim.left_slide_in, R.anim.right_slide_out);
         return;
@@ -70,27 +68,23 @@ public class CameraControlActivity extends ModuleControlActivity {
 
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         _ispaused = false;
         //
-        if (_image != null && _imageurl != null)
-        {
+        if (_image != null && _imageurl != null) {
             refreshImage(Control.getHgBaseHttpAddress() + _imageurl.Value, _image);
         }
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
         _ispaused = true;
     }
 
 
-    private void refreshImage(final String url, final ImageView image)
-    {
+    private void refreshImage(final String url, final ImageView image) {
         if (_ispaused) return;
         //
         final Handler h = new Handler();
@@ -110,6 +104,7 @@ public class CameraControlActivity extends ModuleControlActivity {
             public void imageDownloadFailed(String imageUrl) {
                 h.postDelayed(refresh, 1000);
             }
+
             @Override
             public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                 h.postDelayed(refresh, 150);

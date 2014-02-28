@@ -37,7 +37,6 @@ import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 /**
  * Created by Gene on 02/02/14.
@@ -58,77 +57,70 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
-        if (v == null)
-        {
+        if (v == null) {
             v = inflater.inflate(R.layout.widget_item_upnprenderer, null);
             _module.View = v;
             v.setTag(_module);
             //
-            Button play = (Button)v.findViewById(R.id.playButton);
+            Button play = (Button) v.findViewById(R.id.playButton);
             play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (!_playbackstatus.equals("PLAYING"))
-                    {
+                    if (!_playbackstatus.equals("PLAYING")) {
                         _mediaPlay();
-                    }
-                    else
-                    {
+                    } else {
                         _mediaPause();
                     }
                 }
             });
-            Button stop = (Button)v.findViewById(R.id.stopButton);
+            Button stop = (Button) v.findViewById(R.id.stopButton);
             stop.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     _mediaStop();
                 }
             });
-            Button prev = (Button)v.findViewById(R.id.prevButton);
+            Button prev = (Button) v.findViewById(R.id.prevButton);
             prev.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     _mediaPrev();
                 }
             });
-            Button next = (Button)v.findViewById(R.id.nextButton);
+            Button next = (Button) v.findViewById(R.id.nextButton);
             next.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     _mediaNext();
                 }
             });
-            Button mute = (Button)v.findViewById(R.id.muteButton);
+            Button mute = (Button) v.findViewById(R.id.muteButton);
             mute.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (_currentmute.equals("1"))
-                    {
+                    if (_currentmute.equals("1")) {
                         _mediaSetMute(0);
-                    }
-                    else
-                    {
+                    } else {
                         _mediaSetMute(1);
                     }
                 }
             });
-            SeekBar volbar = (SeekBar)v.findViewById(R.id.volumeSlider);
+            SeekBar volbar = (SeekBar) v.findViewById(R.id.volumeSlider);
             volbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                     _mediaSetVolume(i);
                 }
+
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
                 }
+
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                 }
             });
-        }
-        else
-        {
+        } else {
             v = _module.View;
         }
         return v;
@@ -141,28 +133,27 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
 
         _updateRendererDisplayData();
 
-        TextView title = (TextView)_module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView)_module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView)_module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
 
         title.setText(_module.getDisplayName());
         infotext.setVisibility(View.GONE);
 
         subtitle.setText(Control.getUpnpDisplayName(_module));
         //
-        if (_module.getParameter("UPnP.StandardDeviceType") != null && !_module.getParameter("UPnP.StandardDeviceType").Value.trim().equals(""))
-        {
+        if (_module.getParameter("UPnP.StandardDeviceType") != null && !_module.getParameter("UPnP.StandardDeviceType").Value.trim().equals("")) {
             infotext.setText(_module.getParameter("UPnP.StandardDeviceType").Value);
             infotext.setVisibility(View.VISIBLE);
         }
         //
-        final ImageView image = (ImageView)_module.View.findViewById(R.id.iconImage);
-        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
-        {
+        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
                 public void imageDownloadFailed(String imageUrl) {
                 }
+
                 @Override
                 public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                     image.setTag("CACHED");
@@ -173,8 +164,7 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
     }
 
 
-    private void _updateRendererDisplayData()
-    {
+    private void _updateRendererDisplayData() {
         final String apibase = _module.Domain + "/" + _module.Address + "/";
         Control.callServiceApi(apibase + "AvMedia.GetTransportInfo", new Control.ServiceCallCallback() {
             @Override
@@ -190,7 +180,7 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
                         @Override
                         public void serviceCallCompleted(String value) {
 
-                            SeekBar volume = (SeekBar)_module.View.findViewById(R.id.volumeSlider);
+                            SeekBar volume = (SeekBar) _module.View.findViewById(R.id.volumeSlider);
                             volume.setProgress(Integer.parseInt(value));
 
                             Control.callServiceApi(apibase + "AvMedia.GetMute", new Control.ServiceCallCallback() {
@@ -233,42 +223,32 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
     }
 
 
-    private void _updateControlStatus()
-    {
-        if (_playbackstatus.equals("STOPPED"))
-        {
+    private void _updateControlStatus() {
+        if (_playbackstatus.equals("STOPPED")) {
             _module.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_play);
             _module.View.findViewById(R.id.stopButton).setVisibility(View.GONE);
-        }
-        else if (_playbackstatus.equals("PAUSED_PLAYBACK"))
-        {
+        } else if (_playbackstatus.equals("PAUSED_PLAYBACK")) {
             _module.View.findViewById(R.id.stopButton).setVisibility(View.VISIBLE);
             _module.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_play);
-        }
-        else if (_playbackstatus.equals("PLAYING"))
-        {
+        } else if (_playbackstatus.equals("PLAYING")) {
             _module.View.findViewById(R.id.stopButton).setVisibility(View.VISIBLE);
             _module.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_pause);
         }
         //
-        if (_currentmute.equals("1"))
-        {
+        if (_currentmute.equals("1")) {
             _module.View.findViewById(R.id.muteButton).setBackgroundResource(android.R.drawable.ic_lock_silent_mode);
-        }
-        else
-        {
+        } else {
             _module.View.findViewById(R.id.muteButton).setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
         }
         //
-        TextView trackuri = (TextView)_module.View.findViewById(R.id.mediaUri);
-        TextView trackpos = (TextView)_module.View.findViewById(R.id.mediaPosition);
+        TextView trackuri = (TextView) _module.View.findViewById(R.id.mediaUri);
+        TextView trackpos = (TextView) _module.View.findViewById(R.id.mediaPosition);
         trackuri.setText(_currenturi);
         trackpos.setText(_currentposition);
     }
 
 
-    private void _mediaPlay()
-    {
+    private void _mediaPlay() {
         _playbackstatus = "PLAYING";
         _updateControlStatus();
         String apibase = _module.Domain + "/" + _module.Address + "/";
@@ -278,8 +258,8 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
             }
         });
     }
-    private void _mediaPause()
-    {
+
+    private void _mediaPause() {
         _playbackstatus = "PAUSED_PLAYBACK";
         _updateControlStatus();
         String apibase = _module.Domain + "/" + _module.Address + "/";
@@ -289,8 +269,8 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
             }
         });
     }
-    private void _mediaStop()
-    {
+
+    private void _mediaStop() {
         _playbackstatus = "STOPPED";
         _updateControlStatus();
         String apibase = _module.Domain + "/" + _module.Address + "/";
@@ -300,8 +280,8 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
             }
         });
     }
-    private void _mediaNext()
-    {
+
+    private void _mediaNext() {
         String apibase = _module.Domain + "/" + _module.Address + "/";
         Control.callServiceApi(apibase + "AvMedia.Next", new Control.ServiceCallCallback() {
             @Override
@@ -309,8 +289,8 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
             }
         });
     }
-    private void _mediaPrev()
-    {
+
+    private void _mediaPrev() {
         String apibase = _module.Domain + "/" + _module.Address + "/";
         Control.callServiceApi(apibase + "AvMedia.Prev", new Control.ServiceCallCallback() {
             @Override

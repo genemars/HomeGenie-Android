@@ -52,15 +52,14 @@ public class MediaFilesAdapter extends ArrayAdapter<MediaEntry> {
         inflater = LayoutInflater.from(context);
     }
 
-    public void setEntries(List<MediaEntry> objects)
-    {
+    public void setEntries(List<MediaEntry> objects) {
         _entries.clear();
         _entries.addAll(objects);
         selectedIndex = -1;
         this.notifyDataSetChanged();
     }
-    public void setSelectedIndex(int ind)
-    {
+
+    public void setSelectedIndex(int ind) {
         selectedIndex = ind;
         this.notifyDataSetChanged();
     }
@@ -75,43 +74,32 @@ public class MediaFilesAdapter extends ArrayAdapter<MediaEntry> {
         if (v == null) {
             v = inflater.inflate(R.layout.widget_control_mediaserver_item, parent, false);
             holder = new ViewHolder();
-            holder.Title = (TextView)v.findViewById(R.id.title);
-            holder.Icon = (ImageView)v.findViewById(R.id.icon);
+            holder.Title = (TextView) v.findViewById(R.id.title);
+            holder.Icon = (ImageView) v.findViewById(R.id.icon);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag();
         }
 
         holder.Title.setText(mentry.Title);
-        if (mentry.Class.indexOf("object.container") == 0)
-        {
+        if (mentry.Class.indexOf("object.container") == 0) {
             holder.Title.setTypeface(Typeface.DEFAULT_BOLD);
             holder.Icon.setBackgroundResource(R.drawable.browser_folder);
-        }
-        else
-        {
+        } else {
             holder.Title.setTypeface(Typeface.DEFAULT);
-            if (mentry.Class.indexOf("object.item.videoItem") == 0)
-            {
+            if (mentry.Class.indexOf("object.item.videoItem") == 0) {
                 holder.Icon.setBackgroundResource(R.drawable.browser_video);
-            }
-            else if (mentry.Class.indexOf("object.item.audioItem") == 0)
-            {
+            } else if (mentry.Class.indexOf("object.item.audioItem") == 0) {
                 holder.Icon.setBackgroundResource(R.drawable.browser_audio);
-            }
-            else if (mentry.Class.indexOf("object.item.imageItem") == 0)
-            {
+            } else if (mentry.Class.indexOf("object.item.imageItem") == 0) {
                 holder.Icon.setBackgroundResource(R.drawable.browser_image);
             }
         }
 
 
-        if(selectedIndex != -1 && position == selectedIndex)
-        {
+        if (selectedIndex != -1 && position == selectedIndex) {
             v.setBackgroundColor(getAttrVal(android.R.attr.colorPressedHighlight));
-        }
-        else
-        {
+        } else {
             v.setBackgroundColor(Color.BLACK);
         }
 
@@ -119,12 +107,12 @@ public class MediaFilesAdapter extends ArrayAdapter<MediaEntry> {
         return v;
     }
 
-    private int getAttrVal(int attr)
-    {
+    private int getAttrVal(int attr) {
         TypedValue Val = new TypedValue();
         getContext().getTheme().resolveAttribute(attr, Val, true);
         return Val.data;
     }
+
     private static class ViewHolder {
         ImageView Icon;
         TextView Title;

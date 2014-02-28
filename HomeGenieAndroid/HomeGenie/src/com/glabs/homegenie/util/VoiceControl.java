@@ -62,8 +62,7 @@ public class VoiceControl implements RecognitionListener {
     private ArrayList<Group> _groups;
     private LingoData _lingodata;
 
-    public VoiceControl(StartActivity hgactivity)
-    {
+    public VoiceControl(StartActivity hgactivity) {
         _hgcontext = hgactivity;
 
 
@@ -72,31 +71,21 @@ public class VoiceControl implements RecognitionListener {
         List<ResolveInfo> intActivities = packManager.queryIntentActivities(new Intent(RecognizerIntent.ACTION_WEB_SEARCH), 0);
         if (intActivities.size() != 0) {
             // TODO ok speech recognition supported
-        }
-        else
-        {
+        } else {
             //speech recognition not supported, disable button and output message
             Toast.makeText(_hgcontext, "Oops - Speech recognition not supported!", Toast.LENGTH_LONG).show();
         }
 
 
-
         int lingodef = R.raw.lingo_en;
 
-        if (Locale.getDefault().getLanguage().equals("it"))
-        {
+        if (Locale.getDefault().getLanguage().equals("it")) {
             lingodef = R.raw.lingo_it;
-        }
-        else if (Locale.getDefault().getLanguage().equals("de"))
-        {
+        } else if (Locale.getDefault().getLanguage().equals("de")) {
             lingodef = R.raw.lingo_de;
-        }
-        else if (Locale.getDefault().getLanguage().equals("nl"))
-        {
+        } else if (Locale.getDefault().getLanguage().equals("nl")) {
             lingodef = R.raw.lingo_nl;
-        }
-        else if (Locale.getDefault().getLanguage().equals("sv"))
-        {
+        } else if (Locale.getDefault().getLanguage().equals("sv")) {
             lingodef = R.raw.lingo_sv;
         }
         //
@@ -126,26 +115,22 @@ public class VoiceControl implements RecognitionListener {
             JSONArray jtypes = jobject.getJSONArray("Types");
             JSONArray jcommands = jobject.getJSONArray("Commands");
             //
-            for(int i = 0; i < jtypes.length(); i++)
-            {
+            for (int i = 0; i < jtypes.length(); i++) {
                 JSONObject type = jtypes.getJSONObject(i);
                 LingoType ltype = new LingoType();
                 ltype.Type = type.getString("Type");
                 JSONArray aliases = type.getJSONArray("Aliases");
-                for (int a = 0; a < aliases.length(); a++)
-                {
+                for (int a = 0; a < aliases.length(); a++) {
                     ltype.Aliases.add(aliases.getString(a));
                 }
                 _lingodata.Types.add(ltype);
             }
-            for(int i = 0; i < jcommands.length(); i++)
-            {
+            for (int i = 0; i < jcommands.length(); i++) {
                 JSONObject command = jcommands.getJSONObject(i);
                 LingoCommand lcmd = new LingoCommand();
                 lcmd.Command = command.getString("Command");
                 JSONArray aliases = command.getJSONArray("Aliases");
-                for (int a = 0; a < aliases.length(); a++)
-                {
+                for (int a = 0; a < aliases.length(); a++) {
                     lcmd.Aliases.add(aliases.getString(a));
                 }
                 _lingodata.Commands.add(lcmd);
@@ -154,11 +139,6 @@ public class VoiceControl implements RecognitionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
-
-
 
 
         Control.getGroupModules("", new Control.GetGroupModulesCallback() {
@@ -177,12 +157,7 @@ public class VoiceControl implements RecognitionListener {
         });
 
 
-
     }
-
-
-
-
 
 
     public void startListen() {
@@ -207,12 +182,7 @@ public class VoiceControl implements RecognitionListener {
     }
 
 
-
-
-
-
-    public void interpretInput(String sentence)
-    {
+    public void interpretInput(String sentence) {
         _currentInput = sentence;
         Handler hnd = new Handler(new Handler.Callback() {
             @Override
@@ -238,16 +208,14 @@ public class VoiceControl implements RecognitionListener {
             String type = searchTypeMatch(false);
             String group = searchGroupMatch(nextcommand.StartIndex);
             //
-            if (!command.equals("") && !type.equals(""))
-            {
+            if (!command.equals("") && !type.equals("")) {
                 String[] types = type.split(",");
                 ArrayList<Module> groupmodules = getGroupModules(group);
                 //
                 for (Module module : groupmodules) {
                     for (int t = 0; t < types.length; t++) {
 
-                        if (module.DeviceType != null && types[t].toLowerCase().equals(module.DeviceType.toLowerCase()))
-                        {
+                        if (module.DeviceType != null && types[t].toLowerCase().equals(module.DeviceType.toLowerCase())) {
                             module.control(command, new Control.ServiceCallCallback() {
                                 @Override
                                 public void serviceCallCompleted(String response) {
@@ -265,9 +233,7 @@ public class VoiceControl implements RecognitionListener {
 
                     }
                 }
-            }
-            else
-            {
+            } else {
                 Module module = searchSubjectMatch(group, nextcommand.StartIndex);
                 //
                 if (module != null && !command.equals("")) {
@@ -293,8 +259,7 @@ public class VoiceControl implements RecognitionListener {
     }
 
 
-    public String searchTypeMatch(boolean keepsentence)
-    {
+    public String searchTypeMatch(boolean keepsentence) {
         String result = "";
         LingoMatch curmatch = new LingoMatch("", -1);
         for (LingoType t : getTypes()) {
@@ -315,8 +280,7 @@ public class VoiceControl implements RecognitionListener {
 
     }
 
-    public LingoMatch getCommandMatch()
-    {
+    public LingoMatch getCommandMatch() {
         LingoMatch curmatch = new LingoMatch("", -1);
         for (LingoCommand cmd : getCommands()) {
             for (int c = 0; c < cmd.Aliases.size(); c++) {
@@ -331,8 +295,7 @@ public class VoiceControl implements RecognitionListener {
         return curmatch;
     }
 
-    public String searchCommandMatch()
-    {
+    public String searchCommandMatch() {
         String result = "";
         LingoMatch curmatch = new LingoMatch("", -1);
         for (LingoCommand cmd : getCommands()) {
@@ -352,8 +315,7 @@ public class VoiceControl implements RecognitionListener {
         return result;
     }
 
-    public String searchGroupMatch(int limitindex)
-    {
+    public String searchGroupMatch(int limitindex) {
         String result = "";
         LingoMatch curmatch = new LingoMatch("", -1);
         for (Group g : getGroups()) {
@@ -371,8 +333,7 @@ public class VoiceControl implements RecognitionListener {
 
     }
 
-    public Module searchSubjectMatch(String group, int limitindex)
-    {
+    public Module searchSubjectMatch(String group, int limitindex) {
         Module result = null;
         ArrayList<Module> groupmodules;
         groupmodules = getGroupModules(group);
@@ -397,16 +358,14 @@ public class VoiceControl implements RecognitionListener {
         return result;
     }
 
-    public void removeInputMatch(LingoMatch wordsmatch)
-    {
+    public void removeInputMatch(LingoMatch wordsmatch) {
         if (wordsmatch.StartIndex > -1 && wordsmatch.Words.length() > 0) {
             _currentInput = _currentInput.substring(0, wordsmatch.StartIndex) + ' ' + _currentInput.substring(wordsmatch.StartIndex + wordsmatch.Words.length() - 1);
         }
     }
 
 
-    public LingoMatch findMatchingInput(String words)
-    {
+    public LingoMatch findMatchingInput(String words) {
         LingoMatch wordsmatch = new LingoMatch(words, -1);
         words = ' ' + words.toLowerCase() + ' ';
         int idx = (' ' + _currentInput.toLowerCase() + ' ').indexOf(words);
@@ -416,19 +375,6 @@ public class VoiceControl implements RecognitionListener {
         }
         return wordsmatch;
     }
-
-
-
-
-
-
-    
-
-
-
-
-
-
 
 
     private ArrayList<LingoCommand> getCommands() {
@@ -445,38 +391,32 @@ public class VoiceControl implements RecognitionListener {
 
     private ArrayList<Module> getGroupModules(String group) {
         ArrayList<Module> modules = new ArrayList<Module>();
-        if (group == null || group.equals("")){
+        if (group == null || group.equals("")) {
             modules = _modules;
-        }
-        else
-        for(Group g : _groups)
-        {
-            if (g.Name.toLowerCase().equals(group.toLowerCase()))
-            {
-                for(Module m : g.Modules)
-                {
-                    for(Module im : _modules)
-                    {
-                        if (m.Domain.equals(im.Domain) && m.Address.equals(im.Address))
-                        {
-                            modules.add(im);
+        } else
+            for (Group g : _groups) {
+                if (g.Name.toLowerCase().equals(group.toLowerCase())) {
+                    for (Module m : g.Modules) {
+                        for (Module im : _modules) {
+                            if (m.Domain.equals(im.Domain) && m.Address.equals(im.Address)) {
+                                modules.add(im);
+                            }
                         }
                     }
+                    break;
                 }
-                break;
             }
-        }
         return modules;
     }
 
     /*
-    *//**
+    */
+
+    /**
      * lazy initialize the speech recognizer
      */
-    private SpeechRecognizer getSpeechRecognizer()
-    {
-        if (_recognizer == null)
-        {
+    private SpeechRecognizer getSpeechRecognizer() {
+        if (_recognizer == null) {
             _recognizer = SpeechRecognizer.createSpeechRecognizer(_hgcontext);
             _recognizer.setRecognitionListener(this);
         }
@@ -484,64 +424,32 @@ public class VoiceControl implements RecognitionListener {
     }
 
 
-    public class LingoData
-    {
+    public class LingoData {
         public ArrayList<LingoCommand> Commands = new ArrayList<LingoCommand>();
         public ArrayList<LingoType> Types = new ArrayList<LingoType>();
     }
 
 
-
-
-    public class LingoCommand
-    {
+    public class LingoCommand {
         public String Command;
         public ArrayList<String> Aliases = new ArrayList<String>();
     }
 
-    public class LingoType
-    {
+    public class LingoType {
         public String Type;
         public ArrayList<String> Aliases = new ArrayList<String>();
     }
 
 
-    public class LingoMatch
-    {
+    public class LingoMatch {
         public String Words = "";
         public int StartIndex = -1;
 
-        public LingoMatch(String words, int idx)
-        {
+        public LingoMatch(String words, int idx) {
             this.Words = words;
             this.StartIndex = idx;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     @Override
@@ -572,8 +480,7 @@ public class VoiceControl implements RecognitionListener {
     @Override
     public void onError(int i) {
         String message;
-        switch (i)
-        {
+        switch (i) {
             case SpeechRecognizer.ERROR_AUDIO:
                 message = "Audio recording error";
                 break;
@@ -615,15 +522,13 @@ public class VoiceControl implements RecognitionListener {
     @Override
     public void onResults(Bundle results) {
         if ((results != null)
-                && results.containsKey(SpeechRecognizer.RESULTS_RECOGNITION))
-        {
+                && results.containsKey(SpeechRecognizer.RESULTS_RECOGNITION)) {
             List<String> heard =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             float[] scores =
                     results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
             String msg = "";
-            for(String s : heard)
-            {
+            for (String s : heard) {
                 Toast.makeText(_hgcontext.getApplicationContext(), "Executing: " + s, 20000).show();
                 interpretInput(s);
 //                msg += s;
@@ -641,8 +546,6 @@ public class VoiceControl implements RecognitionListener {
     public void onEvent(int i, Bundle bundle) {
 
     }
-
-
 
 
 }

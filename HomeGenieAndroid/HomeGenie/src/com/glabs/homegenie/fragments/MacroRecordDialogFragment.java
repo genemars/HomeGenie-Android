@@ -48,5 +48,4 @@ public class MacroRecordDialogFragment extends DialogFragment {
     }
 
 
-
 }

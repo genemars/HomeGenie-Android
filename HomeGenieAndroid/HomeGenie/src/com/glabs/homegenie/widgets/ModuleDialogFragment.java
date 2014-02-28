@@ -22,7 +22,6 @@
 package com.glabs.homegenie.widgets;
 
 import android.support.v4.app.DialogFragment;
-import android.view.WindowManager;
 
 import com.glabs.homegenie.service.data.Module;
 
@@ -32,14 +31,14 @@ import com.glabs.homegenie.service.data.Module;
 public class ModuleDialogFragment extends DialogFragment {
 
     protected Module _module = null;
-    public void setDataModule(Module m)
-    {
+
+    public void setDataModule(Module m) {
         _module = m;
     }
+
     public void refreshView() {
 //        getDialog().getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-        if (_module != null && getDialog() != null)
-        {
+        if (_module != null && getDialog() != null) {
             getDialog().setTitle(_module.getDisplayName());
         }
     }

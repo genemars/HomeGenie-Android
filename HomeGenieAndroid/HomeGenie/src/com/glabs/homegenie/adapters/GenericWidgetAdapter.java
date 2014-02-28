@@ -24,7 +24,6 @@ package com.glabs.homegenie.adapters;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -38,7 +37,6 @@ import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.ColorLightDialogFragment;
 import com.glabs.homegenie.widgets.ColorLightRGBDialogFragment;
 import com.glabs.homegenie.widgets.DimmerLightDialogFragment;
-import com.glabs.homegenie.widgets.ModuleControlActivity;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
 
 import java.text.SimpleDateFormat;
@@ -60,48 +58,36 @@ public class GenericWidgetAdapter {
 
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
-        if (v == null)
-        {
+        if (v == null) {
             v = inflater.inflate(R.layout.widget_item_generic, null);
             _module.View = v;
             v.setTag(_module);
-        }
-        else
-        {
+        } else {
             v = _module.View;
         }
         return v;
     }
 
-    public ModuleDialogFragment getControlFragment()
-    {
+    public ModuleDialogFragment getControlFragment() {
         ModuleDialogFragment fmWidget = null;
         ModuleParameter widget = _module.getParameter("Widget.DisplayModule");
         Module.DeviceTypes devtype = Module.DeviceTypes.Generic;
-        try
-        {
+        try {
             devtype = Enum.valueOf(Module.DeviceTypes.class, _module.DeviceType);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             // TODO handle exception
         }
         //
-        if (widget != null && widget.Value.equals("homegenie/generic/colorlight"))
-        {
+        if (widget != null && widget.Value.equals("homegenie/generic/colorlight")) {
             fmWidget = new ColorLightDialogFragment();
-        }
-        else if (widget != null && widget.Value.equals("zwave/fibaro/rgbw"))
-        {
+        } else if (widget != null && widget.Value.equals("zwave/fibaro/rgbw")) {
             fmWidget = new ColorLightRGBDialogFragment();
-        }
-        else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
+        } else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
                 devtype.equals(Module.DeviceTypes.Siren) ||
                 devtype.equals(Module.DeviceTypes.Switch) ||
                 devtype.equals(Module.DeviceTypes.Light) ||
                 devtype.equals(Module.DeviceTypes.Shutter) ||
-                devtype.equals(Module.DeviceTypes.Fan))
-        {
+                devtype.equals(Module.DeviceTypes.Fan)) {
             fmWidget = new DimmerLightDialogFragment();
         }
 
@@ -120,9 +106,9 @@ public class GenericWidgetAdapter {
         View convertView = _module.View;
         Module module = _module;
 
-        TextView title = (TextView)convertView.findViewById(R.id.titleText);
-        TextView subtitle = (TextView)convertView.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView)convertView.findViewById(R.id.infoText);
+        TextView title = (TextView) convertView.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) convertView.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) convertView.findViewById(R.id.infoText);
 
         title.setText(module.getDisplayName());
         subtitle.setText(module.getDisplayAddress());
@@ -131,27 +117,20 @@ public class GenericWidgetAdapter {
         String status = "";
         String updateTimestamp = "";
         ModuleParameter statusLevel = module.getParameter("Status.Level");
-        if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals(""))
-        {
-            if (!statusLevel.Value.equals("0"))
-            {
+        if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals("")) {
+            if (!statusLevel.Value.equals("0")) {
                 status = "on";
-                try
-                {
-                    Integer level = (int)(Double.parseDouble(statusLevel.Value) * 100);
-                    if (level < 100)
-                    {
+                try {
+                    Integer level = (int) (Double.parseDouble(statusLevel.Value) * 100);
+                    if (level < 100) {
                         status = level.toString() + "%";
                     }
                 } catch (NumberFormatException nfe) {
                 }
-            }
-            else
-            {
+            } else {
                 status = "off";
             }
-            if (statusLevel != null)
-            {
+            if (statusLevel != null) {
                 updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(statusLevel.UpdateTime);
                 infotext.setText(updateTimestamp);
                 infotext.setVisibility(View.VISIBLE);
@@ -162,10 +141,8 @@ public class GenericWidgetAdapter {
         View colorBox = convertView.findViewById(R.id.propColorHsb);
         colorBox.setVisibility(View.GONE);
         ModuleParameter statusColor = module.getParameter("Status.ColorHsb");
-        if (statusColor != null && !statusColor.Value.equals(""))
-        {
-            try
-            {
+        if (statusColor != null && !statusColor.Value.equals("")) {
+            try {
                 String[] sHsb = statusColor.Value.split(",");
                 float[] hsb = new float[3];
                 hsb[0] = Float.parseFloat(sHsb[0]) * 360f;
@@ -175,12 +152,12 @@ public class GenericWidgetAdapter {
                 colorView.setBackgroundColor(Color.HSVToColor(hsb));
                 //
                 colorBox.setVisibility(View.VISIBLE);
-            } catch (Exception e) { }
+            } catch (Exception e) {
+            }
         }
         //
         ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
-        if (doorwindowProp != null && doorwindowProp.Value != null)
-        {
+        if (doorwindowProp != null && doorwindowProp.Value != null) {
             updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(doorwindowProp.UpdateTime);
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
@@ -200,7 +177,8 @@ public class GenericWidgetAdapter {
         //
         ModuleParameter sensorTemperature = module.getParameter("Sensor.Temperature");
         String temperature = "";
-        if (sensorTemperature != null) temperature = Module.getFormattedNumber(sensorTemperature.Value);
+        if (sensorTemperature != null)
+            temperature = Module.getFormattedNumber(sensorTemperature.Value);
         _updatePropertyBox(convertView, R.id.propTemperature, "Temp.℃", temperature);
         //
         ModuleParameter sensorHumidity = module.getParameter("Sensor.Humidity");
@@ -215,11 +193,9 @@ public class GenericWidgetAdapter {
         //
         ModuleParameter sensorDoorWindow = module.getParameter("Sensor.DoorWindow");
         String doorwindow = "";
-        if (sensorDoorWindow != null && !sensorDoorWindow.Value.equals(""))
-        {
+        if (sensorDoorWindow != null && !sensorDoorWindow.Value.equals("")) {
             doorwindow = sensorDoorWindow.Value;
-            if (doorwindow != null && !doorwindow.equals(""))
-            {
+            if (doorwindow != null && !doorwindow.equals("")) {
                 double dw = module.getDoubleValue(doorwindow);
                 if (dw > 0)
                     doorwindow = "OPENED";
@@ -234,14 +210,14 @@ public class GenericWidgetAdapter {
         if (sensorMotion != null) motiondetected = Module.getDisplayLevel(sensorMotion.Value);
         _updatePropertyBox(convertView, R.id.propMotionDetect, "Motion", motiondetected);
         //
-        final ImageView image = (ImageView)convertView.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) convertView.findViewById(R.id.iconImage);
         final String timestamp = updateTimestamp;
-        if (image.getTag() == null || !image.getTag().equals(timestamp) && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
-        {
+        if (image.getTag() == null || !image.getTag().equals(timestamp) && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
                 public void imageDownloadFailed(String imageUrl) {
                 }
+
                 @Override
                 public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                     image.setTag(timestamp);
@@ -254,8 +230,7 @@ public class GenericWidgetAdapter {
     }
 
 
-    public static String getModuleIcon(Module module)
-    {
+    public static String getModuleIcon(Module module) {
         ModuleParameter widgetProp = module.getParameter("Widget.DisplayModule");
         ModuleParameter statusLevel = module.getParameter("Status.Level");
         ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
@@ -266,52 +241,39 @@ public class GenericWidgetAdapter {
         String statussuffix = "";
         String widget = "";
         double doorwindow = 0;
-        if (widgetProp != null && widgetProp.Value != null)
-        {
+        if (widgetProp != null && widgetProp.Value != null) {
             widget = widgetProp.Value;
         }
-        if (statusLevel != null && statusLevel.Value != null)
-        {
-            try
-            {
+        if (statusLevel != null && statusLevel.Value != null) {
+            try {
                 level = Double.parseDouble(statusLevel.Value);
-            } catch (Exception e) { }
-            if (level != 0D)
-            {
-                statussuffix = "on";
+            } catch (Exception e) {
             }
-            else
-            {
+            if (level != 0D) {
+                statussuffix = "on";
+            } else {
                 statussuffix = "off";
             }
         }
         //
-        if (doorwindowProp != null && doorwindowProp.Value != null)
-        {
-            try
-            {
+        if (doorwindowProp != null && doorwindowProp.Value != null) {
+            try {
                 doorwindow = Double.parseDouble(doorwindowProp.Value);
-            } catch (Exception e) { }
-            if (doorwindow != 0D)
-            {
-                statussuffix = "on";
+            } catch (Exception e) {
             }
-            else
-            {
+            if (doorwindow != 0D) {
+                statussuffix = "on";
+            } else {
                 statussuffix = "off";
             }
         }
 
         String imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/program.png";
-        if (!widget.equals(""))
-        {
+        if (!widget.equals("")) {
 
-            if (widget.equals("weather/earthtools/sundata"))
-            {
+            if (widget.equals("weather/earthtools/sundata")) {
                 imageurl = "/hg/html/pages/control/widgets/weather/earthtools/images/earthtools.png";
-            }
-            else if (widget.equals("weather/wunderground/conditions"))
-            {
+            } else if (widget.equals("weather/wunderground/conditions")) {
                 ModuleParameter weathericon = null;
 //                    try { weathericon = Properties.First(mp => mp.Name == "Conditions.IconUrl"); }
 //                    catch { }
@@ -332,66 +294,41 @@ public class GenericWidgetAdapter {
                 }
 */
 
-            }
-            else if (widget.equals("homegenie/generic/status"))
-            {
+            } else if (widget.equals("homegenie/generic/status")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/status.png";
-            }
-            else if (widget.equals("homegenie/generic/mediaserver"))
-            {
+            } else if (widget.equals("homegenie/generic/mediaserver")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/media.png";
-            }
-            else if (widget.equals("homegenie/generic/mediareceiver"))
-            {
+            } else if (widget.equals("homegenie/generic/mediareceiver")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/media_receiver.png";
-            }
-            else if (widget.equals("homegenie/generic/sensor"))
-            {
+            } else if (widget.equals("homegenie/generic/sensor")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/sensor.png";
-            }
-            else if (widget.equals("homegenie/generic/doorwindow"))
-            {
+            } else if (widget.equals("homegenie/generic/doorwindow")) {
                 if (level != 0 || doorwindow != 0)
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/door_open.png";
                 else
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/door_closed.png";
-            }
-            else if (widget.equals("homegenie/generic/siren"))
-            {
+            } else if (widget.equals("homegenie/generic/siren")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/siren.png";
-            }
-            else if (widget.equals("homegenie/generic/temperature"))
-            {
+            } else if (widget.equals("homegenie/generic/temperature")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/temperature.png";
-            }
-            else if (widget.equals("homegenie/generic/securitysystem"))
-            {
+            } else if (widget.equals("homegenie/generic/securitysystem")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/securitysystem.png";
-            }
-            else if (widget.equals("homegenie/generic/switch"))
-            {
+            } else if (widget.equals("homegenie/generic/switch")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/socket_" + statussuffix + ".png";
-            }
-            else if (widget.equals("homegenie/generic/light") || widget.equals("homegenie/generic/dimmer") || widget.equals("homegenie/generic/colorlight") || widget.equals("zwave/fibaro/rgbw"))
-            {
+            } else if (widget.equals("homegenie/generic/light") || widget.equals("homegenie/generic/dimmer") || widget.equals("homegenie/generic/colorlight") || widget.equals("zwave/fibaro/rgbw")) {
                 imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/light_" + statussuffix + ".png";
-            }
-            else
-            {
+            } else {
                 //
             }
-        }
-        else
-        {
+        } else {
             // no widget specified, device type fallback
             Module.DeviceTypes type = Module.DeviceTypes.Switch;
-            try
-            {
+            try {
                 type = Enum.valueOf(Module.DeviceTypes.class, module.DeviceType);
-            } catch (Exception e) { }
+            } catch (Exception e) {
+            }
             //
-            switch (type)
-            {
+            switch (type) {
                 case Light:
                 case Dimmer:
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/light_" + statussuffix + ".png";
@@ -403,7 +340,8 @@ public class GenericWidgetAdapter {
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/sensor.png";
                     break;
                 case DoorWindow:
-                    if (statussuffix == "on") statussuffix = "open"; else statussuffix = "closed";
+                    if (statussuffix == "on") statussuffix = "open";
+                    else statussuffix = "closed";
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/door_" + statussuffix + ".png";
                     break;
                 case Thermostat:
@@ -417,30 +355,15 @@ public class GenericWidgetAdapter {
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/fan.png";
                     break;
                 case Shutter:
-                    if (statussuffix == "on") statussuffix = "open"; else statussuffix = "closed";
+                    if (statussuffix == "on") statussuffix = "open";
+                    else statussuffix = "closed";
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/shutters_" + statussuffix + ".png";
                     break;
             }
         }
 
-/*
-        <select id="module_type" onchange="HG.WebApp.GroupModules.UpdateModuleType($(this).val())">
-        <option value="">(select type)</option>
-        <option data-locale-id="configure_module_typelight" value="Light">Light</option>
-        <option data-locale-id="configure_module_typedimmer" value="Dimmer">Dimmer</option>
-        <option data-locale-id="configure_module_typeswitch" value="Switch">Switch</option>
-        <option data-locale-id="configure_module_typesensor" value="Sensor">Sensor</option>
-        <option data-locale-id="configure_module_typetemperature" value="Temperature">Temperature</option>
-        <option data-locale-id="configure_module_typesiren" value="Siren">Siren</option>
-        <option data-locale-id="configure_module_typefan" value="Fan">Fan</option>
-        <option data-locale-id="configure_module_typethermostat" value="Thermostat">Thermostat</option>
-        <option data-locale-id="configure_module_typeshutter" value="Shutter">Shutter</option>
-        <option data-locale-id="configure_module_typedoorwindow" value="DoorWindow">Door/Window</option>
-        </select>*/
-
         return imageurl;
     }
-
 
 
     protected void _updatePropertyBox(View convertView, int boxResId, String label, String value) {
@@ -449,15 +372,12 @@ public class GenericWidgetAdapter {
 
     protected void _updatePropertyBox(View convertView, int boxResId, String label, String value, float fontsize) {
         View propBox = convertView.findViewById(boxResId);
-        if (value == null || value.equals(""))
-        {
+        if (value == null || value.equals("")) {
             propBox.setVisibility(View.GONE);
-        }
-        else
-        {
-            TextView propLabel = (TextView)propBox.findViewById(R.id.propLabel);
+        } else {
+            TextView propLabel = (TextView) propBox.findViewById(R.id.propLabel);
             propLabel.setText(label);
-            TextView propValue = (TextView)propBox.findViewById(R.id.propValue);
+            TextView propValue = (TextView) propBox.findViewById(R.id.propValue);
             if (fontsize != 0) propValue.setTextSize(fontsize);
             propValue.setText(value);
         }

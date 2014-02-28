@@ -24,14 +24,12 @@ package com.glabs.homegenie.service.data;
 import com.glabs.homegenie.adapters.GenericWidgetAdapter;
 import com.glabs.homegenie.service.Control;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class Module {
 
-    public enum DeviceTypes
-    {
+    public enum DeviceTypes {
         Generic,
         Sensor,
         Dimmer,
@@ -44,90 +42,74 @@ public class Module {
     }
 
     public String Domain;
-	public String Address;
-	public String Name;
-	public String Description;
-	public String Type;
-	public String DeviceType;
-	public ArrayList<ModuleParameter> Properties = new ArrayList<ModuleParameter>();
-	
-	public String RoutingNode;
+    public String Address;
+    public String Name;
+    public String Description;
+    public String Type;
+    public String DeviceType;
+    public ArrayList<ModuleParameter> Properties = new ArrayList<ModuleParameter>();
+
+    public String RoutingNode;
 
     // ViewModel
 
-	public android.view.View View;
+    public android.view.View View;
     public GenericWidgetAdapter Adapter;
 
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return this.Name;
     }
 
-    public String getDisplayAddress()
-    {
+    public String getDisplayAddress() {
         String domain = this.Domain;
-        if (domain.indexOf('.') > 0)
-        {
+        if (domain.indexOf('.') > 0) {
             domain = domain.substring(domain.lastIndexOf('.') + 1);
         }
         return domain + " " + this.DeviceType + " " + this.Address;
     }
 
-    public static double getDoubleValue(String propvalue)
-    {
+    public static double getDoubleValue(String propvalue) {
         double doubleval = 0;
-        try
-        {
+        try {
             doubleval = Double.parseDouble(propvalue);
-        } catch (Exception e) { }
+        } catch (Exception e) {
+        }
         return doubleval;
     }
 
-    public static String getDisplayLevel(String level)
-    {
+    public static String getDisplayLevel(String level) {
         String retlevel = "";
-        if (level != null && !level.equals(""))
-        {
+        if (level != null && !level.equals("")) {
             double md = getDoubleValue(level);
-            if (md > 0.9)
-            {
+            if (md > 0.9) {
                 retlevel = "ON";
-            }
-            else if (md > 0)
-            {
+            } else if (md > 0) {
                 retlevel = Math.round(md * 100) + "%";
-            }
-            else
-            {
+            } else {
                 retlevel = "OFF";
             }
         }
         return retlevel;
     }
 
-    public static String getFormattedNumber(String propvalue)
-    {
+    public static String getFormattedNumber(String propvalue) {
         DecimalFormat decimalFormatter = new DecimalFormat();
         decimalFormatter.setMaximumFractionDigits(2);
         String formattedval = "";
-        if (propvalue != null && !propvalue.equals(""))
-        {
-            try
-            {
+        if (propvalue != null && !propvalue.equals("")) {
+            try {
                 formattedval = decimalFormatter.format(Double.parseDouble(propvalue));
-            } catch (Exception e) { }
+            } catch (Exception e) {
+            }
         }
         return formattedval;
     }
 
 
-    public ModuleParameter getParameter(String pname)
-    {
+    public ModuleParameter getParameter(String pname) {
         ModuleParameter retValue = null;
-        for(ModuleParameter mp : this.Properties)
-        {
-            if (mp.Name.equals(pname))
-            {
+        for (ModuleParameter mp : this.Properties) {
+            if (mp.Name.equals(pname)) {
                 retValue = mp;
                 break;
             }
@@ -138,19 +120,15 @@ public class Module {
 
     public void setParameter(String name, String v) {
         ModuleParameter mp = getParameter(name);
-        if (mp != null)
-        {
+        if (mp != null) {
             mp.Value = v;
-        }
-        else
-        {
+        } else {
             mp = new ModuleParameter(name, v);
             Properties.add(mp);
         }
     }
 
-    public void control(String apicommand, final Control.ServiceCallCallback callback)
-    {
+    public void control(String apicommand, final Control.ServiceCallCallback callback) {
         Control.callServiceApi(this.Domain + "/" + this.Address + "/" + apicommand, new Control.ServiceCallCallback() {
             @Override
             public void serviceCallCompleted(String response) {

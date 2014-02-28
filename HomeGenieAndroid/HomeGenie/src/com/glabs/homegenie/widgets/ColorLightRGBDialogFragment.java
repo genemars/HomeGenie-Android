@@ -53,9 +53,9 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
         final Fragment _this = this;
 
         _view = inflater.inflate(R.layout.widget_control_colorlightrgb, null);
-        _groupText = (TextView)_view.findViewById(R.id.groupText);
-        _levelText = (TextView)_view.findViewById(R.id.levelText);
-        _colorPicker = (ColorPickerView)_view.findViewById(R.id.color_picker_view);
+        _groupText = (TextView) _view.findViewById(R.id.groupText);
+        _levelText = (TextView) _view.findViewById(R.id.levelText);
+        _colorPicker = (ColorPickerView) _view.findViewById(R.id.color_picker_view);
         _colorPreview = _view.findViewById(R.id.colorPreview);
 
         _colorPicker.setOnColorChangedListener(new ColorPickerView.OnColorChangedListener() {
@@ -73,8 +73,7 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
         _colorPicker.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_UP)
-                {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                     String cmd = "Control.ColorHsb/" + _module.getParameter("Status.ColorHsb").Value;
                     _module.control(cmd, null);
                     return true;
@@ -83,57 +82,57 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
             }
         });
 
-        Button prg6Button = (Button)_view.findViewById(R.id.prg6Button);
+        Button prg6Button = (Button) _view.findViewById(R.id.prg6Button);
         prg6Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 _module.setParameter("Status.Level", "100");
                 refreshView();
-                _module.control("Control.ProgramRGB/6", null );
+                _module.control("Control.ProgramRGB/6", null);
             }
         });
 
-        Button prg7Button = (Button)_view.findViewById(R.id.prg7Button);
+        Button prg7Button = (Button) _view.findViewById(R.id.prg7Button);
         prg7Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 _module.setParameter("Status.Level", "100");
                 refreshView();
-                _module.control("Control.ProgramRGB/7", null );
+                _module.control("Control.ProgramRGB/7", null);
             }
         });
 
-        Button prg8Button = (Button)_view.findViewById(R.id.prg8Button);
+        Button prg8Button = (Button) _view.findViewById(R.id.prg8Button);
         prg8Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 _module.setParameter("Status.Level", "100");
                 refreshView();
-                _module.control("Control.ProgramRGB/8", null );
+                _module.control("Control.ProgramRGB/8", null);
             }
         });
 
-        Button prg9Button = (Button)_view.findViewById(R.id.prg9Button);
+        Button prg9Button = (Button) _view.findViewById(R.id.prg9Button);
         prg9Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 _module.setParameter("Status.Level", "100");
                 refreshView();
-                _module.control("Control.ProgramRGB/9", null );
+                _module.control("Control.ProgramRGB/9", null);
             }
         });
 
-        Button prg10Button = (Button)_view.findViewById(R.id.prg10Button);
+        Button prg10Button = (Button) _view.findViewById(R.id.prg10Button);
         prg10Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 _module.setParameter("Status.Level", "100");
                 refreshView();
-                _module.control("Control.ProgramRGB/10", null );
+                _module.control("Control.ProgramRGB/10", null);
             }
         });
 
-        Button onButton = (Button)_view.findViewById(R.id.onButton);
+        Button onButton = (Button) _view.findViewById(R.id.onButton);
         onButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -143,7 +142,7 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
             }
         });
 
-        Button offButton = (Button)_view.findViewById(R.id.offButton);
+        Button offButton = (Button) _view.findViewById(R.id.offButton);
         offButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -159,8 +158,7 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
     }
 
     @Override
-    public void refreshView()
-    {
+    public void refreshView() {
         super.refreshView();
         //
         _view.post(new Runnable() {
@@ -173,10 +171,8 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
                 else
                     _levelText.setText("");
                 ModuleParameter colorParam = _module.getParameter("Status.ColorHsb");
-                if (colorParam != null && colorParam.Value != null)
-                {
-                    try
-                    {
+                if (colorParam != null && colorParam.Value != null) {
+                    try {
                         String[] sRgb = colorParam.Value.split(",");
                         int red = Integer.parseInt(sRgb[0]);
                         int green = Integer.parseInt(sRgb[1]);
@@ -184,9 +180,7 @@ public class ColorLightRGBDialogFragment extends ModuleDialogFragment {
                         int color = Color.rgb(red, green, blue);
                         _colorPicker.setColor(color);
                         _colorPreview.setBackgroundColor(color);
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         // TODO parsing errors
                     }
                 }

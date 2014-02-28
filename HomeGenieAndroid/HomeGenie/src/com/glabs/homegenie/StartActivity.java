@@ -21,6 +21,29 @@
 
 package com.glabs.homegenie;
 
+import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+
 import com.glabs.homegenie.fragments.ErrorDialogFragment;
 import com.glabs.homegenie.fragments.GroupsViewFragment;
 import com.glabs.homegenie.fragments.MacroRecordDialogFragment;
@@ -31,32 +54,6 @@ import com.glabs.homegenie.service.data.Module;
 import com.glabs.homegenie.util.UpnpManager;
 import com.glabs.homegenie.util.VoiceControl;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
-
-import android.annotation.TargetApi;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-
-import android.os.Build;
-import android.os.Handler;
-
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
@@ -87,9 +84,8 @@ public class StartActivity extends FragmentActivity {
                 public void groupModulesUpdated(ArrayList<Module> modules) {
 
                     Fragment widgetpopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
-                    if (widgetpopup != null && widgetpopup instanceof ModuleDialogFragment)
-                    {
-                        ((ModuleDialogFragment)widgetpopup).refreshView();
+                    if (widgetpopup != null && widgetpopup instanceof ModuleDialogFragment) {
+                        ((ModuleDialogFragment) widgetpopup).refreshView();
                     }
                     mHandler.postDelayed(mStatusChecker, mInterval);
 
@@ -103,15 +99,14 @@ public class StartActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         //Remove title bar
         //this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && getActionBar() != null)
-        {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && getActionBar() != null) {
             getActionBar().setDisplayShowHomeEnabled(false);
         }
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_start);
 
-        mLoadingCircle = (LinearLayout)findViewById(R.id.loadingCircle);
+        mLoadingCircle = (LinearLayout) findViewById(R.id.loadingCircle);
         mGroupsViewFragment = new GroupsViewFragment();
 
         Control.setContext(this);
@@ -125,8 +120,7 @@ public class StartActivity extends FragmentActivity {
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         _ispaused = false;
 
@@ -139,35 +133,28 @@ public class StartActivity extends FragmentActivity {
                 settings.getString("servicePassword", "")
         );
 
-        if (settings.getString("serviceAddress", "127.0.0.1").equals("127.0.0.1"))
-        {
+        if (settings.getString("serviceAddress", "127.0.0.1").equals("127.0.0.1")) {
             showLogo();
             showSettings();
-        }
-        else
-        {
+        } else {
             updateGroups();
         }
 
-        if (_upnpmanager == null)
-        {
+        if (_upnpmanager == null) {
             _upnpmanager = new UpnpManager(this);
             _upnpmanager.bind();
         }
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
         _ispaused = true;
 
-        if (mHandler != null)
-        {
+        if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
-        if (_upnpmanager != null)
-        {
+        if (_upnpmanager != null) {
             _upnpmanager.unbind();
             _upnpmanager = null;
         }
@@ -175,8 +162,7 @@ public class StartActivity extends FragmentActivity {
     }
 
     @Override
-    public boolean onKeyDown (int keyCode, KeyEvent event)
-    {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
 /*        if (keyCode == KeyEvent.KEYCODE_BACK) {
             return true;
         }
@@ -190,22 +176,7 @@ public class StartActivity extends FragmentActivity {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void hideLogo()
-    {
+    public void hideLogo() {
         _islogovisible = false;
         runOnUiThread(new Runnable() {
             @Override
@@ -218,14 +189,13 @@ public class StartActivity extends FragmentActivity {
                 AnimationSet animation = new AnimationSet(false); //change to false
                 animation.addAnimation(fadeOut);
                 animation.setFillAfter(true);
-                RelativeLayout ivlogo = (RelativeLayout)findViewById(R.id.logo);
+                RelativeLayout ivlogo = (RelativeLayout) findViewById(R.id.logo);
                 ivlogo.startAnimation(animation);
             }
         });
     }
 
-    public void showLogo()
-    {
+    public void showLogo() {
         _islogovisible = true;
         runOnUiThread(new Runnable() {
             @Override
@@ -238,7 +208,7 @@ public class StartActivity extends FragmentActivity {
                 AnimationSet animation = new AnimationSet(false); //change to false
                 animation.addAnimation(fadeIn);
                 animation.setFillAfter(true);
-                RelativeLayout ivlogo = (RelativeLayout)findViewById(R.id.logo);
+                RelativeLayout ivlogo = (RelativeLayout) findViewById(R.id.logo);
                 ivlogo.startAnimation(animation);
             }
         });
@@ -282,8 +252,7 @@ public class StartActivity extends FragmentActivity {
     }
 
     public void updateGroupModules() {
-        if (mHandler != null)
-        {
+        if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
         mHandler = new Handler();
@@ -292,11 +261,9 @@ public class StartActivity extends FragmentActivity {
     }
 
 
-    public void updateGroups()
-    {
+    public void updateGroups() {
         loaderShow();
-        if (mHandler != null)
-        {
+        if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
         final StartActivity hgcontext = this;
@@ -329,16 +296,13 @@ public class StartActivity extends FragmentActivity {
         });
     }
 
-    public void showOptionsMenu()
-    {
+    public void showOptionsMenu() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try
-                {
+                try {
                     openOptionsMenu();
-                    if (_actionmenu != null)
-                    {
+                    if (_actionmenu != null) {
                         _actionmenu.performIdentifierAction(R.id.menu_system, 0);
                     }
                 } catch (Exception e) {
@@ -349,20 +313,9 @@ public class StartActivity extends FragmentActivity {
     }
 
 
-
-
-
-
-
-
-
-
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (_actionmenu == null)
-        {
+        if (_actionmenu == null) {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.menu_group, menu);
             _actionmenu = menu;
@@ -379,6 +332,7 @@ public class StartActivity extends FragmentActivity {
         mGroupsViewFragment.UpdateCurrentGroupMenu();
         return super.onCreateOptionsMenu(menu);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -398,8 +352,7 @@ public class StartActivity extends FragmentActivity {
                 // Read preferences
                 SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
                 String serviceAddress = settings.getString("serviceAddress", "");
-                if (!serviceAddress.equals(""))
-                {
+                if (!serviceAddress.equals("")) {
                     browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + serviceAddress));
                     startActivity(browserIntent);
                 }
@@ -418,15 +371,14 @@ public class StartActivity extends FragmentActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
     @Override
-    public void onOptionsMenuClosed(Menu menu)
-    {
+    public void onOptionsMenuClosed(Menu menu) {
         super.onOptionsMenuClosed(menu);
     }
 
 
-    public Menu getActionMenu()
-    {
+    public Menu getActionMenu() {
         return _actionmenu;
     }
 
@@ -438,7 +390,7 @@ public class StartActivity extends FragmentActivity {
         mHandler.removeCallbacks(mStatusChecker);
     }
 
-	@Override
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
     }

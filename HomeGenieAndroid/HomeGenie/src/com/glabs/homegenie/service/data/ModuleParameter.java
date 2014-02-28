@@ -24,17 +24,18 @@ package com.glabs.homegenie.service.data;
 import java.util.Date;
 
 public class ModuleParameter {
- 
+
     public ModuleParameter(String name, String value) {
-    	this.Name = name;
-    	this.Value = value;
-	}
-	public String Name = "";
+        this.Name = name;
+        this.Value = value;
+    }
+
+    public String Name = "";
     public String Value = "";
     public String Description = "";
     public Date UpdateTime = new Date();
     //
     public String LastValue = "";
     public Date LastUpdateTime = new Date();
-    
+
 }

@@ -32,20 +32,10 @@ package com.glabs.homegenie.util;
  */
 
 
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.net.http.AndroidHttpClient;
@@ -53,6 +43,14 @@ import android.os.AsyncTask;
 import android.widget.ImageView;
 
 import com.glabs.homegenie.service.Control;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
 /**
  * helper task for downloading a bitmap image from http and setting it to given image view asynchronously
@@ -62,12 +60,10 @@ import com.glabs.homegenie.service.Control;
  *
  * @author meinside@gmail.com
  * @since 10.11.12.
- *
+ * <p/>
  * last update: 10.11.12.
- *
  */
-public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
-{
+public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
     private String url;
     protected final WeakReference<ImageView> imageViewReference;
     protected WeakReference<Bitmap> imageBitmap = new WeakReference<Bitmap>(null);
@@ -75,16 +71,13 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
     private boolean animate = false;
 
     /**
-     *
      * @param imageView
      */
-    public AsyncImageDownloadTask(ImageView imageView, boolean doanim, ImageDownloadListener listener)
-    {
+    public AsyncImageDownloadTask(ImageView imageView, boolean doanim, ImageDownloadListener listener) {
         animate = doanim;
         imageView.buildDrawingCache(false);
         Bitmap bmref = imageView.getDrawingCache(false);
-        if (bmref != null)
-        {
+        if (bmref != null) {
             imageBitmap = new WeakReference<Bitmap>(Bitmap.createBitmap(bmref));
         }
         imageViewReference = new WeakReference<ImageView>(imageView);
@@ -92,14 +85,11 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
     }
 
     /**
-     *
      * @param url
      * @param imageView
      */
-    public void download(String url, ImageView imageView)
-    {
-        if(cancelPotentialDownload(url, imageView))
-        {
+    public void download(String url, ImageView imageView) {
+        if (cancelPotentialDownload(url, imageView)) {
             AsyncImageDownloadTask task = new AsyncImageDownloadTask(imageView, animate, listener);
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
             imageView.setImageDrawable(downloadedDrawable);
@@ -108,34 +98,28 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
     }
 
     @Override
-    protected Bitmap doInBackground(String... params)
-    {
+    protected Bitmap doInBackground(String... params) {
         return downloadBitmap(params[0]);
     }
 
     @Override
-    protected void onPostExecute(Bitmap bitmap)
-    {
-        if(isCancelled())
-        {
+    protected void onPostExecute(Bitmap bitmap) {
+        if (isCancelled()) {
             //bitmap = null;
             //return;
         }
 
-        if(imageViewReference != null)
-        {
+        if (imageViewReference != null) {
             ImageView imageView = imageViewReference.get();
             AsyncImageDownloadTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
             // Change bitmap only if this process is still associated with it
-            if(this == bitmapDownloaderTask)
-            {
-                if (animate)
-                {
+            if (this == bitmapDownloaderTask) {
+                if (animate) {
                     Resources resources = imageView.getResources();
                     BitmapDrawable drawable = new BitmapDrawable(resources, bitmap);
                     Drawable currentDrawable = imageView.getDrawable();
                     if (currentDrawable != null) {
-                        Drawable [] arrayDrawable = new Drawable[2];
+                        Drawable[] arrayDrawable = new Drawable[2];
                         arrayDrawable[0] = currentDrawable;
                         arrayDrawable[1] = drawable;
                         final TransitionDrawable transitionDrawable = new TransitionDrawable(arrayDrawable);
@@ -145,9 +129,7 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
                     } else {
                         imageView.setImageDrawable(drawable);
                     }
-                }
-                else
-                {
+                } else {
                     imageView.setImageBitmap(bitmap);
                 }
             }
@@ -155,24 +137,18 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
     }
 
     /**
-     *
      * @param url
      * @param imageView
      * @return false if the same url is already being downloaded
      */
-    private boolean cancelPotentialDownload(String url, ImageView imageView)
-    {
+    private boolean cancelPotentialDownload(String url, ImageView imageView) {
         AsyncImageDownloadTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
-        if(bitmapDownloaderTask != null)
-        {
+        if (bitmapDownloaderTask != null) {
             String bitmapUrl = bitmapDownloaderTask.url;
-            if(bitmapUrl == null || !bitmapUrl.equals(url))
-            {
+            if (bitmapUrl == null || !bitmapUrl.equals(url)) {
                 bitmapDownloaderTask.cancel(true);
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
@@ -180,78 +156,60 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
     }
 
     /**
-     *
      * @param url
      * @return
      */
-    private Bitmap downloadBitmap(String url)
-    {
+    private Bitmap downloadBitmap(String url) {
         final AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
         final HttpGet getRequest = Control.getHttpGetRequest(url);
-        try
-        {
+        try {
             HttpResponse response = client.execute(getRequest);
             final int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode == HttpStatus.SC_OK)
-            {
+            if (statusCode == HttpStatus.SC_OK) {
                 final HttpEntity entity = response.getEntity();
-                if(entity != null)
-                {
+                if (entity != null) {
                     InputStream inputStream = null;
-                    try
-                    {
+                    try {
                         inputStream = entity.getContent();
                         final Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
-                        if(listener != null)
+                        if (listener != null)
                             listener.imageDownloaded(url, bitmap);  //call back
 
                         return bitmap;
-                    }
-                    finally
-                    {
-                        if(inputStream != null)
-                        {
+                    } finally {
+                        if (inputStream != null) {
                             inputStream.close();
                         }
                         entity.consumeContent();
                     }
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             // Could provide a more explicit error message for IOException or
             // IllegalStateException
             getRequest.abort();
-        }
-        finally
-        {
-            if(client != null)
-            {
+        } finally {
+            if (client != null) {
                 client.close();
             }
         }
 
-        if(listener != null)
+        if (listener != null)
             listener.imageDownloadFailed(url);  //call back
 
         return null;
     }
 
     /**
-     *
      * @param imageView
      * @return
      */
-    private AsyncImageDownloadTask getBitmapDownloaderTask(ImageView imageView)
-    {
-        if(imageView != null)
-        {
+    private AsyncImageDownloadTask getBitmapDownloaderTask(ImageView imageView) {
+        if (imageView != null) {
             Drawable drawable = imageView.getDrawable();
-            if(drawable instanceof DownloadedDrawable)
-            {
-                DownloadedDrawable downloadedDrawable = (DownloadedDrawable)drawable;
+            if (drawable instanceof DownloadedDrawable) {
+                DownloadedDrawable downloadedDrawable = (DownloadedDrawable) drawable;
                 return downloadedDrawable.getBitmapDownloaderTask();
             }
         }
@@ -260,20 +218,16 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
 
     /**
      * <b>referenced</b>: http://android-developers.blogspot.com/2010/07/multithreading-for-performance.html
-     *
      */
-    public class DownloadedDrawable extends BitmapDrawable
-    {
+    public class DownloadedDrawable extends BitmapDrawable {
         private final WeakReference<AsyncImageDownloadTask> bitmapDownloaderTaskReference;
 
-        public DownloadedDrawable(AsyncImageDownloadTask bitmapDownloaderTask)
-        {
+        public DownloadedDrawable(AsyncImageDownloadTask bitmapDownloaderTask) {
             super(bitmapDownloaderTask.imageBitmap.get());
             bitmapDownloaderTaskReference = new WeakReference<AsyncImageDownloadTask>(bitmapDownloaderTask);
         }
 
-        public AsyncImageDownloadTask getBitmapDownloaderTask()
-        {
+        public AsyncImageDownloadTask getBitmapDownloaderTask() {
             return bitmapDownloaderTaskReference.get();
         }
     }
@@ -282,10 +236,8 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap>
      * for calling back download results
      *
      * @author meinside@gmail.com
-     *
      */
-    public interface ImageDownloadListener
-    {
+    public interface ImageDownloadListener {
         /**
          * called when the download failed
          *

@@ -47,14 +47,11 @@ public class MediaServerWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
-        if (v == null)
-        {
+        if (v == null) {
             v = inflater.inflate(R.layout.widget_item_upnpmedia, null);
             _module.View = v;
             v.setTag(_module);
-        }
-        else
-        {
+        } else {
             v = _module.View;
         }
         return v;
@@ -65,28 +62,27 @@ public class MediaServerWidgetAdapter extends GenericWidgetAdapter {
 
         if (_module.View == null) return;
 
-        TextView title = (TextView)_module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView)_module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView)_module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
 
         title.setText(_module.getDisplayName());
         infotext.setVisibility(View.GONE);
 
         subtitle.setText(Control.getUpnpDisplayName(_module));
         //
-        if (_module.getParameter("UPnP.StandardDeviceType") != null && !_module.getParameter("UPnP.StandardDeviceType").Value.trim().equals(""))
-        {
+        if (_module.getParameter("UPnP.StandardDeviceType") != null && !_module.getParameter("UPnP.StandardDeviceType").Value.trim().equals("")) {
             infotext.setText(_module.getParameter("UPnP.StandardDeviceType").Value);
             infotext.setVisibility(View.VISIBLE);
         }
         //
-        final ImageView image = (ImageView)_module.View.findViewById(R.id.iconImage);
-        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
-        {
+        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
                 public void imageDownloadFailed(String imageUrl) {
                 }
+
                 @Override
                 public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                     image.setTag("CACHED");
@@ -98,8 +94,7 @@ public class MediaServerWidgetAdapter extends GenericWidgetAdapter {
     }
 
     @Override
-    public ModuleDialogFragment getControlFragment()
-    {
+    public ModuleDialogFragment getControlFragment() {
         ModuleDialogFragment fmWidget = new MediaServerDialogFragment();
         return fmWidget;
     }

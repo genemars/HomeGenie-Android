@@ -21,18 +21,18 @@
 
 package com.glabs.homegenie.widgets;
 
-import  com.glabs.homegenie.R;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.ModuleParameter;
-
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.glabs.homegenie.R;
+import com.glabs.homegenie.service.Control;
+import com.glabs.homegenie.service.data.ModuleParameter;
 
 /**
  * Created by Gene on 01/01/14.
@@ -51,11 +51,11 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
         final Fragment _this = this;
 
         _view = inflater.inflate(R.layout.widget_control_dimmerlight, null);
-        _groupText = (TextView)_view.findViewById(R.id.groupText);
-        _levelText = (TextView)_view.findViewById(R.id.levelText);
-        _levelBar = (SeekBar)_view.findViewById(R.id.levelBar);
+        _groupText = (TextView) _view.findViewById(R.id.groupText);
+        _levelText = (TextView) _view.findViewById(R.id.levelText);
+        _levelBar = (SeekBar) _view.findViewById(R.id.levelBar);
 
-        Button onButton = (Button)_view.findViewById(R.id.onButton);
+        Button onButton = (Button) _view.findViewById(R.id.onButton);
         onButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,7 +65,7 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
             }
         });
 
-        Button offButton = (Button)_view.findViewById(R.id.offButton);
+        Button offButton = (Button) _view.findViewById(R.id.offButton);
         offButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -78,7 +78,7 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
         _levelBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean b) {
-                _module.setParameter("Status.Level", String.valueOf((double)seekBar.getProgress() / 100D));
+                _module.setParameter("Status.Level", String.valueOf((double) seekBar.getProgress() / 100D));
                 refreshView();
             }
 
@@ -88,7 +88,7 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                _module.setParameter("Status.Level", String.valueOf((double)seekBar.getProgress() / 100D));
+                _module.setParameter("Status.Level", String.valueOf((double) seekBar.getProgress() / 100D));
                 refreshView();
                 _module.control("Control.Level/" + seekBar.getProgress(), new Control.ServiceCallCallback() {
                     @Override
@@ -106,26 +106,21 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
     }
 
     @Override
-    public void refreshView()
-    {
+    public void refreshView() {
         super.refreshView();
         //
         _view.post(new Runnable() {
             @Override
             public void run() {
-                if (!_module.DeviceType.equals("Dimmer") && !_module.DeviceType.equals("Siren"))
-                {
+                if (!_module.DeviceType.equals("Dimmer") && !_module.DeviceType.equals("Siren")) {
                     _levelBar.setVisibility(View.GONE);
                 }
                 _groupText.setText(_module.getDisplayAddress());
                 ModuleParameter levelParam = _module.getParameter("Status.Level");
-                if (levelParam != null)
-                {
+                if (levelParam != null) {
                     _levelText.setText(_module.getDisplayLevel(levelParam.Value));
-                    _levelBar.setProgress((int)Math.round(_module.getDoubleValue(levelParam.Value) * 100));
-                }
-                else
-                {
+                    _levelBar.setProgress((int) Math.round(_module.getDoubleValue(levelParam.Value) * 100));
+                } else {
                     _levelText.setText("");
                 }
             }

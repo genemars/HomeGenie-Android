@@ -34,7 +34,6 @@ import com.glabs.homegenie.service.data.Module;
 import com.glabs.homegenie.service.data.ModuleParameter;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.CameraControlActivity;
-import com.glabs.homegenie.widgets.ModuleControlActivity;
 
 /**
  * Created by Gene on 31/01/14.
@@ -50,14 +49,11 @@ public class CameraWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
-        if (v == null)
-        {
+        if (v == null) {
             v = inflater.inflate(R.layout.widget_item_camera, null);
             _module.View = v;
             v.setTag(_module);
-        }
-        else
-        {
+        } else {
             v = _module.View;
         }
         return v;
@@ -68,9 +64,9 @@ public class CameraWidgetAdapter extends GenericWidgetAdapter {
 
         if (_module.View == null) return;
 
-        TextView title = (TextView)_module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView)_module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView)_module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
 
         title.setText(_module.getDisplayName());
         subtitle.setText(_module.getDisplayAddress());
@@ -79,13 +75,14 @@ public class CameraWidgetAdapter extends GenericWidgetAdapter {
         // get Image.URL property
         ModuleParameter imageurl = _module.getParameter("Image.URL");
         //
-        final ImageView image = (ImageView)_module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
         if (imageurl != null)// && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
         {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, false, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
                 public void imageDownloadFailed(String imageUrl) {
                 }
+
                 @Override
                 public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                 }

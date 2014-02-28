@@ -21,9 +21,6 @@
 
 package com.glabs.homegenie.service;
 
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
-
 /**
  * Created by Gene on 02/01/14.
  */

@@ -49,7 +49,7 @@ public class ErrorDialogFragment extends DialogFragment {
 
         final ErrorDialogFragment _this = this;
 
-        Button retry = (Button)v.findViewById(R.id.retry_button);
+        Button retry = (Button) v.findViewById(R.id.retry_button);
         retry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -59,12 +59,12 @@ public class ErrorDialogFragment extends DialogFragment {
             }
         });
 
-        Button options = (Button)v.findViewById(R.id.options_button);
+        Button options = (Button) v.findViewById(R.id.options_button);
         options.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                StartActivity sa = (StartActivity)getActivity();
+                StartActivity sa = (StartActivity) getActivity();
                 //sa.showSettings();
                 sa.showOptionsMenu();
                 _loadgroups = false;
@@ -80,9 +80,8 @@ public class ErrorDialogFragment extends DialogFragment {
     public void onStop() {
         super.onStop();
 
-        if (_loadgroups)
-        {
-            StartActivity sa = (StartActivity)getActivity();
+        if (_loadgroups) {
+            StartActivity sa = (StartActivity) getActivity();
             sa.updateGroups();
         }
     }

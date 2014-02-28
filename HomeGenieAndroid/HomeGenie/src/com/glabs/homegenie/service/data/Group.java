@@ -24,12 +24,12 @@ package com.glabs.homegenie.service.data;
 import java.util.ArrayList;
 
 public class Group {
-	public String Name;
-	//
-	public ArrayList<Module> Modules;
-	//
-	public Group()
-	{
-		Modules = new ArrayList<Module>();
-	}
+    public String Name;
+    //
+    public ArrayList<Module> Modules;
+
+    //
+    public Group() {
+        Modules = new ArrayList<Module>();
+    }
 }

@@ -27,10 +27,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -38,9 +35,7 @@ import android.widget.Spinner;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.adapters.MediaFilesAdapter;
-import com.glabs.homegenie.adapters.MediaServerWidgetAdapter;
 import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Group;
 import com.glabs.homegenie.service.data.MediaEntry;
 import com.glabs.homegenie.service.data.Module;
 import com.glabs.homegenie.service.data.ModuleParameter;
@@ -91,13 +86,11 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                 });
 
 
-
         mAdapter = new MediaFilesAdapter(_view.getContext(), R.layout.widget_control_mediaserver_item, new ArrayList<MediaEntry>());
         final ListView lv = (ListView) _view.findViewById(R.id.filesList);
         lv.setAdapter(mAdapter);
         //
-        if (navigationStack.size() == 0)
-        {
+        if (navigationStack.size() == 0) {
             navigationStack.add("0");
         }
         //
@@ -108,22 +101,16 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                 mAdapter.setSelectedIndex(i);
                 _selectedMedia = null;
                 //
-                if (clicked.Class.indexOf("object.container") == 0)
-                {
+                if (clicked.Class.indexOf("object.container") == 0) {
                     // browse to folder
                     _dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                    if (clicked.Title.equals(PARENT_FOLDER))
-                    {
+                    if (clicked.Title.equals(PARENT_FOLDER)) {
                         navigationStack.removeLast();
-                    }
-                    else
-                    {
+                    } else {
                         navigationStack.add(clicked.Id);
                     }
                     browseMediaFolder(lv);
-                }
-                else
-                {
+                } else {
                     // set current media file
                     _selectedMedia = clicked;
                     _dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
@@ -131,7 +118,6 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
             }
         });
         //
-
 
 
         Control.getGroupModules("", new Control.GetGroupModulesCallback() {
@@ -144,22 +130,20 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                 for (int m = 0; m < modules.size(); m++) {
                     Module module = modules.get(m);
                     ModuleParameter devtype = module.getParameter("UPnP.StandardDeviceType");
-                    if (devtype != null && devtype.Value.equals("MediaRenderer"))
-                    {
+                    if (devtype != null && devtype.Value.equals("MediaRenderer")) {
                         renderers.add(module);
                         playtoitems.add(Control.getUpnpDisplayName(module));
                     }
                 }
                 //
                 // Media Renderer Spinner Select
-                Spinner playto = (Spinner)_view.findViewById(R.id.playto);
+                Spinner playto = (Spinner) _view.findViewById(R.id.playto);
                 playto.setAdapter(playtoitems);
                 playto.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                         _selectedMediaRender = null;
-                        if (i > 0)
-                        {
+                        if (i > 0) {
                             _selectedMediaRender = renderers.get(i - 1);
                         }
                     }
@@ -189,14 +173,12 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
 
 
     @Override
-    public void refreshView()
-    {
+    public void refreshView() {
 //        super.refreshView();
     }
 
 
-    private void playMediaTo()
-    {
+    private void playMediaTo() {
         // _selectedMedia
         String apicall = _module.Domain + "/" + _module.Address + "/AvMedia.GetUri/" + _selectedMedia.Id + "/";
         Control.callServiceApi(apicall, new Control.ServiceCallCallback() {
@@ -208,36 +190,29 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(mediauri));
 
                     if (mediauri.endsWith(".mp3") ||
-                        mediauri.endsWith(".m4a") ||
-                        mediauri.endsWith(".wav"))
-                    {
+                            mediauri.endsWith(".m4a") ||
+                            mediauri.endsWith(".wav")) {
                         i.setType("audio/*");
-                    }
-                    else if(mediauri.endsWith(".jpeg") ||
-                            mediauri.endsWith(".jpg")  ||
-                            mediauri.endsWith(".png")  ||
-                            mediauri.endsWith(".gif")  ||
-                            mediauri.endsWith(".tiff"))
-                    {
+                    } else if (mediauri.endsWith(".jpeg") ||
+                            mediauri.endsWith(".jpg") ||
+                            mediauri.endsWith(".png") ||
+                            mediauri.endsWith(".gif") ||
+                            mediauri.endsWith(".tiff")) {
                         // use default browser, internal image gallery won't work for external files
                         //i.setType("image/*");
-                    }
-                    else if(mediauri.endsWith(".m4v") ||
+                    } else if (mediauri.endsWith(".m4v") ||
                             mediauri.endsWith(".3gp") ||
                             mediauri.endsWith(".wmv") ||
                             mediauri.endsWith(".mp4") ||
                             mediauri.endsWith(".mpeg") ||
                             mediauri.endsWith(".mpg") ||
                             mediauri.endsWith(".avi") ||
-                            mediauri.endsWith(".ogg"))
-                    {
+                            mediauri.endsWith(".ogg")) {
                         i.setType("video/*");
                     }
 
                     _view.getContext().startActivity(i);
-                }
-                else
-                {
+                } else {
                     String apicall;
                     try {
                         apicall = _selectedMediaRender.Domain + "/" + _selectedMediaRender.Address + "/AvMedia.SetUri/" + URLEncoder.encode(mediauri, "UTF-8") + "/";
@@ -259,8 +234,7 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
     }
 
 
-    private void browseMediaFolder(final ListView lv)
-    {
+    private void browseMediaFolder(final ListView lv) {
         String apicall = _module.Domain + "/" + _module.Address + "/AvMedia.Browse/" + navigationStack.getLast() + "/";
         Control.callServiceApi(apicall, new Control.ServiceCallCallback() {
             @Override
@@ -269,8 +243,7 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                 if (jsonString == null || jsonString.equals("")) return;
                 //
                 ArrayList<MediaEntry> entries = new ArrayList<MediaEntry>();
-                if (navigationStack.size() > 1)
-                {
+                if (navigationStack.size() > 1) {
                     MediaEntry prevfolder = new MediaEntry();
                     prevfolder.Id = navigationStack.get(navigationStack.size() - 2);
                     prevfolder.Title = PARENT_FOLDER;
@@ -279,9 +252,8 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                 }
                 try {
                     JSONArray jitems = new JSONArray(jsonString);
-                    for (int g = 0; g < jitems.length(); g++)
-                    {
-                        JSONObject jg = (JSONObject)jitems.get(g);
+                    for (int g = 0; g < jitems.length(); g++) {
+                        JSONObject jg = (JSONObject) jitems.get(g);
                         MediaEntry entry = new MediaEntry();
                         entry.Id = jg.getString("Id");
                         entry.Title = jg.getString("Title");

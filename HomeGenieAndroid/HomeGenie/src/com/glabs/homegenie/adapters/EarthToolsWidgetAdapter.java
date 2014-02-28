@@ -47,14 +47,11 @@ public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
-        if (v == null)
-        {
+        if (v == null) {
             v = inflater.inflate(R.layout.widget_item_earthtools, null);
             _module.View = v;
             v.setTag(_module);
-        }
-        else
-        {
+        } else {
             v = _module.View;
         }
         return v;
@@ -65,9 +62,9 @@ public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
 
         if (_module.View == null) return;
 
-        TextView title = (TextView)_module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView)_module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView)_module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
 
         title.setText(_module.getDisplayName());
         subtitle.setText(_module.getDisplayAddress());
@@ -93,20 +90,19 @@ public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
         if (longParam != null) longitude = Module.getFormattedNumber(longParam.Value);
         _updatePropertyBox(_module.View, R.id.propLongitude, "Long.", longitude);
         //
-        if (sunriseParam != null)
-        {
+        if (sunriseParam != null) {
             String updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }
         //
-        final ImageView image = (ImageView)_module.View.findViewById(R.id.iconImage);
-        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
-        {
+        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
                 public void imageDownloadFailed(String imageUrl) {
                 }
+
                 @Override
                 public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                     image.setTag("CACHED");

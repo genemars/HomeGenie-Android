@@ -51,14 +51,11 @@ public class StatusWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
-        if (v == null)
-        {
+        if (v == null) {
             v = inflater.inflate(R.layout.widget_item_status, null);
             _module.View = v;
             v.setTag(_module);
-        }
-        else
-        {
+        } else {
             v = _module.View;
         }
         return v;
@@ -69,64 +66,57 @@ public class StatusWidgetAdapter extends GenericWidgetAdapter {
 
         if (_module.View == null) return;
 
-        TextView title = (TextView)_module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView)_module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView)_module.View.findViewById(R.id.infoText);
-        FlowLayout propscontainer = (FlowLayout)_module.View.findViewById(R.id.propsContainer);
+        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
+        FlowLayout propscontainer = (FlowLayout) _module.View.findViewById(R.id.propsContainer);
 
         title.setText(_module.getDisplayName());
         subtitle.setText(_module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
         Date lastUpdate = null;
-        LayoutInflater inflater = (LayoutInflater)_module.View.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for(ModuleParameter p : _module.Properties)
-        {
-            if (p.Name.startsWith("StatusWidget."))
-            {
+        LayoutInflater inflater = (LayoutInflater) _module.View.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        for (ModuleParameter p : _module.Properties) {
+            if (p.Name.startsWith("StatusWidget.")) {
                 View propView = null;
-                for (int c = 0; c < propscontainer.getChildCount(); c++)
-                {
+                for (int c = 0; c < propscontainer.getChildCount(); c++) {
                     Object tag = propscontainer.getChildAt(c).getTag();
-                    if (tag != null && tag.equals(p.Name))
-                    {
+                    if (tag != null && tag.equals(p.Name)) {
                         propView = propscontainer.getChildAt(c);
                         break;
                     }
                 }
-                if (propView == null)
-                {
+                if (propView == null) {
                     propView = inflater.inflate(R.layout.widget_fragment_property_small, null);
                     propView.setTag(p.Name);
                     propscontainer.addView(propView);
                 }
-                TextView pname = (TextView)propView.findViewById(R.id.propLabel);
+                TextView pname = (TextView) propView.findViewById(R.id.propLabel);
                 pname.setText(p.Name.replace("StatusWidget.", ""));
-                TextView ptext = (TextView)propView.findViewById(R.id.propValue);
+                TextView ptext = (TextView) propView.findViewById(R.id.propValue);
                 ptext.setText(p.Value);
                 //
-                if (lastUpdate == null || lastUpdate.getTime() < p.UpdateTime.getTime())
-                {
+                if (lastUpdate == null || lastUpdate.getTime() < p.UpdateTime.getTime()) {
                     lastUpdate = p.UpdateTime;
                 }
             }
         }
 
-        if (lastUpdate != null)
-        {
+        if (lastUpdate != null) {
             String updateTimestamp;
             updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(lastUpdate);
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }
 
-        final ImageView image = (ImageView)_module.View.findViewById(R.id.iconImage);
-        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
-        {
+        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
                 public void imageDownloadFailed(String imageUrl) {
                 }
+
                 @Override
                 public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
                     image.setTag("CACHED");

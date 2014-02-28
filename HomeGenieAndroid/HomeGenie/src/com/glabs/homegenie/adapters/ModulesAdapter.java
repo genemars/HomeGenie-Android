@@ -21,68 +21,54 @@
 
 package com.glabs.homegenie.adapters;
 
-import java.text.SimpleDateFormat;
-import java.util.List;
-
-import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.Module.DeviceTypes;
-
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
 
+import com.glabs.homegenie.service.data.Module;
 import com.glabs.homegenie.service.data.ModuleParameter;
-import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.ModuleWidgetHolder;
 
-public class ModulesAdapter extends ArrayAdapter<Module> {
-	
-	private List<Module> _modules;
+import java.util.List;
 
-	public ModulesAdapter(Context context, int resource, List<Module> objects) {
-		super(context, resource, objects);
-		_modules = objects;
-	}
-	
-	public void setModules(List<Module> objects)
-	{
-		for(Module nm : objects)
-		{
-			boolean exists = false;
-			for(Module m : _modules)
-			{
-				if (m.Domain.equals(nm.Domain) && m.Address.equals(nm.Address))
-				{
-					exists = true;
-					//TODO: update properties
+public class ModulesAdapter extends ArrayAdapter<Module> {
+
+    private List<Module> _modules;
+
+    public ModulesAdapter(Context context, int resource, List<Module> objects) {
+        super(context, resource, objects);
+        _modules = objects;
+    }
+
+    public void setModules(List<Module> objects) {
+        for (Module nm : objects) {
+            boolean exists = false;
+            for (Module m : _modules) {
+                if (m.Domain.equals(nm.Domain) && m.Address.equals(nm.Address)) {
+                    exists = true;
+                    //TODO: update properties
                     m.Properties = nm.Properties;
-					break;
-				}
-			}
+                    break;
+                }
+            }
             ModuleParameter widgetParam = nm.getParameter("Widget.DisplayModule");
             String widget = "";
             if (widgetParam != null) widget = widgetParam.Value;
-			if (!exists && !widget.equals("homegenie/generic/program"))
-			{
-				_modules.add(nm);
-			}
-		}
-		//
-		this.notifyDataSetChanged();
-	}
+            if (!exists && !widget.equals("homegenie/generic/program")) {
+                _modules.add(nm);
+            }
+        }
+        //
+        this.notifyDataSetChanged();
+    }
 
-	@Override
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) getContext()
-             .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
         Module module = _modules.get(position);
         ModuleWidgetHolder widget = new ModuleWidgetHolder(module);
         convertView = widget.getView(inflater);

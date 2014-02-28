@@ -28,7 +28,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
-import android.widget.Toast;
 
 import com.glabs.homegenie.StartActivity;
 import com.glabs.homegenie.fragments.SettingsFragment;
@@ -52,14 +51,12 @@ public class UpnpManager {
     private AndroidUpnpService upnpService;
     private RegistryListener registryListener = new BrowseRegistryListener();
 
-    public UpnpManager(StartActivity hgref)
-    {
+    public UpnpManager(StartActivity hgref) {
         _hgcontext = hgref;
 
     }
 
-    public void bind()
-    {
+    public void bind() {
         // TODO test UPnP discovery
         _hgcontext.getApplicationContext().bindService(
                 new Intent(_hgcontext, AndroidUpnpServiceImpl.class),
@@ -68,8 +65,7 @@ public class UpnpManager {
         );
     }
 
-    public void unbind()
-    {
+    public void unbind() {
         // TODO test UPnP unbind
         if (upnpService != null) {
             upnpService.getRegistry().removeListener(registryListener);
@@ -82,12 +78,10 @@ public class UpnpManager {
         public void onServiceConnected(ComponentName className, IBinder service) {
 //            Toast.makeText(_hgcontext.getApplicationContext(), "UPnP service active.", 2000).show();
 
-            try
-            {
+            try {
                 upnpService = (AndroidUpnpService) service;
 
-                if (upnpService.getRegistry() != null)
-                {
+                if (upnpService.getRegistry() != null) {
                     // Refresh the list with all known devices
                     //listAdapter.clear();
                     for (Device device : upnpService.getRegistry().getDevices()) {
@@ -99,13 +93,10 @@ public class UpnpManager {
                     upnpService.getRegistry().addListener(registryListener);
                 }
 
-                if (upnpService.getControlPoint() != null)
-                {
+                if (upnpService.getControlPoint() != null) {
                     // Search asynchronously for all devices
                     upnpService.getControlPoint().search();
-                }
-                else
-                {
+                } else {
 //                    Toast.makeText(_hgcontext.getApplicationContext(), "UPnP initialization error: Control Point is null!", 2000).show();
                 }
             } catch (Exception e) {
@@ -117,9 +108,6 @@ public class UpnpManager {
             upnpService = null;
         }
     };
-
-
-
 
 
     class BrowseRegistryListener extends DefaultRegistryListener {
@@ -206,7 +194,7 @@ public class UpnpManager {
             //runOnUiThread(new Runnable() {
             //    public void run() {
 //                    Toast.makeText(getApplicationContext(), "UpNP: removed " + device.getDisplayString(), 2000).show();
-                    //listAdapter.remove(new DeviceDisplay(device));
+            //listAdapter.remove(new DeviceDisplay(device));
             //    }
             //});
         }

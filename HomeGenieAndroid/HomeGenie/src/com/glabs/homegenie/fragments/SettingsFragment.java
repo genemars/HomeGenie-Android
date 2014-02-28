@@ -28,7 +28,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 
 import com.glabs.homegenie.R;
@@ -53,9 +52,9 @@ public class SettingsFragment extends DialogFragment {
 
         View v = inflater.inflate(R.layout.fragment_settings, null);
 
-        hg_address = (EditText)v.findViewById(R.id.hg_service_address);
-        hg_user = (EditText)v.findViewById(R.id.hg_service_user);
-        hg_pass = (EditText)v.findViewById(R.id.hg_service_pass);
+        hg_address = (EditText) v.findViewById(R.id.hg_service_address);
+        hg_user = (EditText) v.findViewById(R.id.hg_service_user);
+        hg_pass = (EditText) v.findViewById(R.id.hg_service_pass);
 
 /*        Button connect = (Button)v.findViewById(R.id.btn_connect);
         connect.setOnClickListener(new View.OnClickListener() {
@@ -75,8 +74,7 @@ public class SettingsFragment extends DialogFragment {
         return v;
     }
 
-    public void setHomeGenieAddress(String address)
-    {
+    public void setHomeGenieAddress(String address) {
         hg_address.setText(address);
         hg_pass.requestFocus();
     }
@@ -109,7 +107,7 @@ public class SettingsFragment extends DialogFragment {
                 settings.getString("servicePassword", "")
         );
 
-        StartActivity sa = (StartActivity)getActivity();
+        StartActivity sa = (StartActivity) getActivity();
         sa.showLogo();
         sa.updateGroups();
 

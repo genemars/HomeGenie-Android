@@ -53,9 +53,9 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
         final Fragment _this = this;
 
         _view = inflater.inflate(R.layout.widget_control_colorlight, null);
-        _groupText = (TextView)_view.findViewById(R.id.groupText);
-        _levelText = (TextView)_view.findViewById(R.id.levelText);
-        _colorPicker = (ColorPickerView)_view.findViewById(R.id.color_picker_view);
+        _groupText = (TextView) _view.findViewById(R.id.groupText);
+        _levelText = (TextView) _view.findViewById(R.id.levelText);
+        _colorPicker = (ColorPickerView) _view.findViewById(R.id.color_picker_view);
         _colorPreview = _view.findViewById(R.id.colorPreview);
 
         _colorPicker.setOnColorChangedListener(new ColorPickerView.OnColorChangedListener() {
@@ -73,8 +73,7 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
         _colorPicker.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_UP)
-                {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                     String cmd = "Control.ColorHsb/" + _module.getParameter("Status.ColorHsb").Value;
                     _module.control(cmd, null);
                     return true;
@@ -83,7 +82,7 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
             }
         });
 
-        Button onButton = (Button)_view.findViewById(R.id.onButton);
+        Button onButton = (Button) _view.findViewById(R.id.onButton);
         onButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,7 +92,7 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
             }
         });
 
-        Button offButton = (Button)_view.findViewById(R.id.offButton);
+        Button offButton = (Button) _view.findViewById(R.id.offButton);
         offButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -109,8 +108,7 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
     }
 
     @Override
-    public void refreshView()
-    {
+    public void refreshView() {
         super.refreshView();
         //
         _view.post(new Runnable() {
@@ -123,10 +121,8 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
                 else
                     _levelText.setText("");
                 ModuleParameter colorParam = _module.getParameter("Status.ColorHsb");
-                if (colorParam != null && colorParam.Value != null)
-                {
-                    try
-                    {
+                if (colorParam != null && colorParam.Value != null) {
+                    try {
                         String[] sHsb = colorParam.Value.split(",");
                         float[] hsb = new float[3];
                         hsb[0] = Float.parseFloat(sHsb[0]) * 360f;
@@ -135,9 +131,7 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
                         int color = Color.HSVToColor(hsb);
                         _colorPicker.setColor(color);
                         _colorPreview.setBackgroundColor(color);
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         // TODO parsing errors
                     }
                 }
