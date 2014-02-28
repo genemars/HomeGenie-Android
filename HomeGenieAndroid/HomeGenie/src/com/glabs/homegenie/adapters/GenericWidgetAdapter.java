@@ -164,18 +164,37 @@ public class GenericWidgetAdapter {
         ModuleParameter statusColor = module.getParameter("Status.ColorHsb");
         if (statusColor != null && !statusColor.Value.equals(""))
         {
-            try
+            ModuleParameter widget = module.getParameter("Widget.DisplayModule");
+            if (widget != null && widget.Value.equals("zwave/fibaro/rgbw"))
             {
-                String[] sHsb = statusColor.Value.split(",");
-                float[] hsb = new float[3];
-                hsb[0] = Float.parseFloat(sHsb[0]) * 360f;
-                hsb[1] = Float.parseFloat(sHsb[1]);
-                hsb[2] = Float.parseFloat(sHsb[2]);
-                View colorView = colorBox.findViewById(R.id.propColor);
-                colorView.setBackgroundColor(Color.HSVToColor(hsb));
-                //
-                colorBox.setVisibility(View.VISIBLE);
-            } catch (Exception e) { }
+                try
+                {
+                    String[] sRgb = statusColor.Value.split(",");
+                    int red = Integer.parseInt(sRgb[0]);
+                    int green = Integer.parseInt(sRgb[1]);
+                    int blue = Integer.parseInt(sRgb[2]);
+                    int color = Color.rgb(red, green, blue);
+                    View colorView = colorBox.findViewById(R.id.propColor);
+                    colorView.setBackgroundColor(color);
+                    //
+                    colorBox.setVisibility(View.VISIBLE);
+                } catch (Exception e) { }
+            }
+            else
+            {
+                try
+                {
+                    String[] sHsb = statusColor.Value.split(",");
+                    float[] hsb = new float[3];
+                    hsb[0] = Float.parseFloat(sHsb[0]) * 360f;
+                    hsb[1] = Float.parseFloat(sHsb[1]);
+                    hsb[2] = Float.parseFloat(sHsb[2]);
+                    View colorView = colorBox.findViewById(R.id.propColor);
+                    colorView.setBackgroundColor(Color.HSVToColor(hsb));
+                    //
+                    colorBox.setVisibility(View.VISIBLE);
+                } catch (Exception e) { }
+            }
         }
         //
         ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
