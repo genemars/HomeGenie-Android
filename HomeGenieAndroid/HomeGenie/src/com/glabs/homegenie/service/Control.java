@@ -283,7 +283,6 @@ public class Control {
                     Module module = new Module();
                     module.Domain = jm.getString("Domain");
                     module.Address = jm.getString("Address");
-                    module.Type = jm.getString("Type");
                     module.DeviceType = jm.getString("DeviceType");
                     module.Name = jm.getString("Name");
                     module.Description = jm.getString("Description");

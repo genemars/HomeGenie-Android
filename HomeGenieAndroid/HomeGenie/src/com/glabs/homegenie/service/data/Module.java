@@ -45,7 +45,6 @@ public class Module {
     public String Address;
     public String Name;
     public String Description;
-    public String Type;
     public String DeviceType;
     public ArrayList<ModuleParameter> Properties = new ArrayList<ModuleParameter>();
 
