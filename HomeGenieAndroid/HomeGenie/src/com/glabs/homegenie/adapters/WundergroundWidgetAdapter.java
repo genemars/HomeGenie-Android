@@ -27,8 +27,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.data.ModuleParameter;
 
 import java.text.SimpleDateFormat;
 
@@ -106,16 +106,13 @@ public class WundergroundWidgetAdapter extends GenericWidgetAdapter {
         TextView tv2 = (TextView) _module.View.findViewById(R.id.condDescription);
         tv2.setText(description);
 
-
         String updateTimestamp = "";
         if (sunriseParam != null) {
             updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }
-        //
 
-        //
         ModuleParameter iconUrl = _module.getParameter("Conditions.IconUrl");
         int imageres = 0;
         if (iconUrl != null) {
@@ -127,7 +124,6 @@ public class WundergroundWidgetAdapter extends GenericWidgetAdapter {
                 fname = "weather_day_" + fname; // + ".png";
             }
             imageres = _module.View.getResources().getIdentifier(fname, "drawable", _module.View.getContext().getApplicationContext().getPackageName());
-            ;
         }
         final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
         final String timestamp = updateTimestamp;

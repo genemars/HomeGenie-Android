@@ -32,7 +32,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.data.ModuleParameter;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
 

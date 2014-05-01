@@ -32,8 +32,8 @@ import com.glabs.homegenie.adapters.MediaServerWidgetAdapter;
 import com.glabs.homegenie.adapters.SecurityWidgetAdapter;
 import com.glabs.homegenie.adapters.StatusWidgetAdapter;
 import com.glabs.homegenie.adapters.WundergroundWidgetAdapter;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.data.ModuleParameter;
 
 /**
  * Created by Gene on 05/01/14.
@@ -64,9 +64,7 @@ public class ModuleWidgetHolder {
     }
 
     public View getView(LayoutInflater inflater) {
-
         return _adapter.getView(inflater);
-
     }
 
     public void renderView() {

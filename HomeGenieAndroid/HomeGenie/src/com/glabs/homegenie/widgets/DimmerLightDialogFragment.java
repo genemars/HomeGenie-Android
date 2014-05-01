@@ -31,8 +31,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.ModuleParameter;
 
 /**
  * Created by Gene on 01/01/14.
@@ -100,6 +100,11 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
             }
         });
 
+        if (_module.DeviceType.equals("Shutter")) {
+            onButton.setText("Open");
+            offButton.setText("Close");
+        }
+
         refreshView();
 
         return _view;
@@ -112,13 +117,21 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
         _view.post(new Runnable() {
             @Override
             public void run() {
-                if (!_module.DeviceType.equals("Dimmer") && !_module.DeviceType.equals("Siren")) {
+                if (!_module.DeviceType.equals("Dimmer") && !_module.DeviceType.equals("Siren") && !_module.DeviceType.equals("Shutter")) {
                     _levelBar.setVisibility(View.GONE);
                 }
                 _groupText.setText(_module.getDisplayAddress());
                 ModuleParameter levelParam = _module.getParameter("Status.Level");
                 if (levelParam != null) {
-                    _levelText.setText(_module.getDisplayLevel(levelParam.Value));
+                    String level = _module.getDisplayLevel(levelParam.Value);
+                    if (_module.DeviceType.equals("Shutter")) {
+                        if (level.equals("OFF")) {
+                            level = "Closed";
+                        } else if (level.equals("ON")) {
+                            level = "Open";
+                        }
+                    }
+                    _levelText.setText(level);
                     _levelBar.setProgress((int) Math.round(_module.getDoubleValue(levelParam.Value) * 100));
                 } else {
                     _levelText.setText("");

@@ -35,10 +35,10 @@ import android.widget.Spinner;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.adapters.MediaFilesAdapter;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.MediaEntry;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.MediaEntry;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.data.ModuleParameter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -85,7 +85,6 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                     }
                 });
 
-
         mAdapter = new MediaFilesAdapter(_view.getContext(), R.layout.widget_control_mediaserver_item, new ArrayList<MediaEntry>());
         final ListView lv = (ListView) _view.findViewById(R.id.filesList);
         lv.setAdapter(mAdapter);
@@ -118,7 +117,6 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
             }
         });
         //
-
 
         Control.getGroupModules("", new Control.GetGroupModulesCallback() {
             @Override
@@ -159,7 +157,6 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
         //
         browseMediaFolder(lv);
 
-
         // Create the AlertDialog object and return it
         _dialog = builder.create();
         _dialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -171,12 +168,10 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
         return _dialog;
     }
 
-
     @Override
     public void refreshView() {
 //        super.refreshView();
     }
-
 
     private void playMediaTo() {
         // _selectedMedia

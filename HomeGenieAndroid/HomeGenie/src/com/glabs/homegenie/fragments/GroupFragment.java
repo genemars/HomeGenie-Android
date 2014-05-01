@@ -31,7 +31,7 @@ import com.glabs.homegenie.R;
 
 public final class GroupFragment extends Fragment {
 
-    public static GroupFragment newInstance(String content) {
+    public static GroupFragment newInstance() {
         GroupFragment fragment = new GroupFragment();
         return fragment;
     }

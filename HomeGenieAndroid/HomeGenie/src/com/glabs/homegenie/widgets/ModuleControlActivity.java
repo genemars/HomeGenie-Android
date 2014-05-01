@@ -23,7 +23,7 @@ package com.glabs.homegenie.widgets;
 
 import android.app.Activity;
 
-import com.glabs.homegenie.service.data.Module;
+import com.glabs.homegenie.client.data.Module;
 
 /**
  * Created by Gene on 02/02/14.

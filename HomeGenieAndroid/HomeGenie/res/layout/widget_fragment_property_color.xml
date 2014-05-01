@@ -25,6 +25,7 @@
                 android:textAppearance="@android:style/TextAppearance.Medium"
                 android:textColor="@color/default_line_indicator_selected_color"
                 android:text="Color"
+                android:singleLine="true"
                 android:layout_centerHorizontal="true"/>
         </RelativeLayout>
 

@@ -82,7 +82,7 @@ public class ErrorDialogFragment extends DialogFragment {
 
         if (_loadgroups) {
             StartActivity sa = (StartActivity) getActivity();
-            sa.updateGroups();
+            sa.homegenieConnect();
         }
     }
 }

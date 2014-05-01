@@ -32,7 +32,7 @@ import android.widget.EditText;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.StartActivity;
-import com.glabs.homegenie.service.Control;
+import com.glabs.homegenie.client.Control;
 
 
 /**
@@ -101,7 +101,7 @@ public class SettingsFragment extends DialogFragment {
         editor.commit();
 
         // Set HG coordinates
-        Control.setHgServer(
+        Control.setServer(
                 settings.getString("serviceAddress", ""),
                 settings.getString("serviceUsername", ""),
                 settings.getString("servicePassword", "")
@@ -109,7 +109,7 @@ public class SettingsFragment extends DialogFragment {
 
         StartActivity sa = (StartActivity) getActivity();
         sa.showLogo();
-        sa.updateGroups();
+        sa.homegenieConnect();
 
     }
 }

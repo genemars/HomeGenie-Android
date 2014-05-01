@@ -30,8 +30,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Module;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 
 import org.json.JSONArray;

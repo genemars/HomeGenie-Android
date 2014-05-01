@@ -24,6 +24,7 @@
                 android:textAppearance="@android:style/TextAppearance.Medium"
                 android:textColor="@color/default_line_indicator_selected_color"
                 android:text="Level"
+                android:singleLine="true"
                 android:layout_centerHorizontal="true"/>
         </RelativeLayout>
 
@@ -31,9 +32,10 @@
             android:id="@+id/propValue"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:textAppearance="@android:style/TextAppearance.Small"
             android:gravity="center"
             android:layout_gravity="center"
+            android:singleLine="true"
             android:text="ON"
             />
 

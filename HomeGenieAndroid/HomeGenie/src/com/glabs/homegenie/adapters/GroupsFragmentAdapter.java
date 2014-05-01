@@ -23,9 +23,12 @@ package com.glabs.homegenie.adapters;
 
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.View;
+import android.widget.ListView;
 
+import com.glabs.homegenie.R;
+import com.glabs.homegenie.client.data.Group;
 import com.glabs.homegenie.fragments.GroupFragment;
-import com.glabs.homegenie.service.data.Group;
 import com.viewpagerindicator.IconPagerAdapter;
 
 import java.util.ArrayList;
@@ -35,25 +38,22 @@ public class GroupsFragmentAdapter extends FragmentPagerAdapter implements IconP
     private ArrayList<GroupFragment> _fragments = new ArrayList<GroupFragment>();
 
     public void setGroups(ArrayList<Group> groups) {
-        boolean changed = false;
-        //this._groups = groups;
-        //this._fragments.clear();
-        for (Group g : groups) {
-            boolean exists = false;
-            for (Group eg : _groups) {
-                if (g.Name.equals(eg.Name)) {
-                    exists = true;
-                    break;
+        this._groups = groups;
+        for (int f = 0; f < _groups.size(); f++) {
+            GroupFragment fragment = null;
+            if (_fragments.size() > f) fragment = _fragments.get(f);
+            if (fragment == null) {
+                fragment = GroupFragment.newInstance();
+                _fragments.add(fragment);
+            } else {
+                View v = fragment.getView();
+                if (v != null) {
+                    ListView lv = (ListView) v.findViewById(R.id.listView);
+                    if (lv != null) lv.setAdapter(null);
                 }
             }
-            if (!exists) {
-                changed = true;
-                _groups.add(_groups.size(), g);
-                _fragments.add(new GroupFragment());
-            }
         }
-        if (changed) notifyDataSetChanged();
-
+        notifyDataSetChanged();
     }
 
     public Group getGroup(int position) {
@@ -66,7 +66,6 @@ public class GroupsFragmentAdapter extends FragmentPagerAdapter implements IconP
 
     @Override
     public GroupFragment getItem(int position) {
-
         return _fragments.get(position);
     }
 
@@ -85,7 +84,4 @@ public class GroupsFragmentAdapter extends FragmentPagerAdapter implements IconP
         return 0; //ICONS[index % ICONS.length];
     }
 
-    public ArrayList<Group> getGroups() {
-        return _groups;
-    }
 }

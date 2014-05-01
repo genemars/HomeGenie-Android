@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
+    android:background="@android:color/black"
     >
 
 
@@ -19,6 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Camera Device"
+            android:singleLine="true"
             android:textStyle="bold"
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
@@ -28,6 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="1 Web Camera"
+            android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:alpha="0.5"
             />
@@ -38,6 +41,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="Monday, 15 Aug 2013 15:44:22"
+            android:singleLine="true"
             android:alpha="0.3"
             />
 

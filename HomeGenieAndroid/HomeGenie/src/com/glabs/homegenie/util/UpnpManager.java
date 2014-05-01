@@ -30,8 +30,8 @@ import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
 
 import com.glabs.homegenie.StartActivity;
+import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.fragments.SettingsFragment;
-import com.glabs.homegenie.service.Control;
 
 import org.teleal.cling.android.AndroidUpnpService;
 import org.teleal.cling.android.AndroidUpnpServiceImpl;
@@ -162,7 +162,7 @@ public class UpnpManager {
                     // Read preferences
                     SharedPreferences settings = _hgcontext.getSharedPreferences(_hgcontext.PREFS_NAME, 0);
                     // Set HG coordinates
-                    Control.setHgServer(
+                    Control.setServer(
                             settings.getString("serviceAddress", "127.0.0.1"),
                             settings.getString("serviceUsername", "admin"),
                             settings.getString("servicePassword", "")

@@ -30,9 +30,9 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.data.ModuleParameter;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 
 import java.text.SimpleDateFormat;

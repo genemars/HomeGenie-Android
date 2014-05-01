@@ -23,7 +23,7 @@ package com.glabs.homegenie.widgets;
 
 import android.support.v4.app.DialogFragment;
 
-import com.glabs.homegenie.service.data.Module;
+import com.glabs.homegenie.client.data.Module;
 
 /**
  * Created by Gene on 03/01/14.

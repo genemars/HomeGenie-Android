@@ -34,9 +34,9 @@ import android.widget.Toast;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.StartActivity;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Group;
-import com.glabs.homegenie.service.data.Module;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.Group;
+import com.glabs.homegenie.client.data.Module;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -58,8 +58,6 @@ public class VoiceControl implements RecognitionListener {
     private SpeechRecognizer _recognizer;
 
     private String _currentInput = "";
-    private ArrayList<Module> _modules = new ArrayList<Module>();
-    private ArrayList<Group> _groups;
     private LingoData _lingodata;
 
     public VoiceControl(StartActivity hgactivity) {
@@ -139,23 +137,6 @@ public class VoiceControl implements RecognitionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-        Control.getGroupModules("", new Control.GetGroupModulesCallback() {
-            @Override
-            public void groupModulesUpdated(ArrayList<Module> modules) {
-                _modules = modules;
-                Control.getGroups(new Control.GetGroupsCallback() {
-                    @Override
-                    public void groupsUpdated(boolean success, ArrayList<Group> groups) {
-                        _groups = groups;
-                        // system ready
-                        //interpretInput("accendi la luce esterna");
-                    }
-                });
-            }
-        });
-
 
     }
 
@@ -318,7 +299,7 @@ public class VoiceControl implements RecognitionListener {
     public String searchGroupMatch(int limitindex) {
         String result = "";
         LingoMatch curmatch = new LingoMatch("", -1);
-        for (Group g : getGroups()) {
+        for (Group g : Control.getGroups()) {
             LingoMatch res = findMatchingInput(g.Name);
             if (res.StartIndex != -1 && (res.StartIndex < limitindex || limitindex == -1) && (res.StartIndex < curmatch.StartIndex || curmatch.StartIndex == -1)) {
                 result = g.Name;
@@ -385,19 +366,15 @@ public class VoiceControl implements RecognitionListener {
         return _lingodata.Types;
     }
 
-    private ArrayList<Group> getGroups() {
-        return _groups;
-    }
-
     private ArrayList<Module> getGroupModules(String group) {
         ArrayList<Module> modules = new ArrayList<Module>();
         if (group == null || group.equals("")) {
-            modules = _modules;
+            modules = Control.getModules();
         } else
-            for (Group g : _groups) {
+            for (Group g : Control.getGroups()) {
                 if (g.Name.toLowerCase().equals(group.toLowerCase())) {
                     for (Module m : g.Modules) {
-                        for (Module im : _modules) {
+                        for (Module im : Control.getModules()) {
                             if (m.Domain.equals(im.Domain) && m.Address.equals(im.Address)) {
                                 modules.add(im);
                             }

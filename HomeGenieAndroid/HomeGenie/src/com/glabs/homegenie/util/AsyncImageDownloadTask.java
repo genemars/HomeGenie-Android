@@ -42,7 +42,7 @@ import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.widget.ImageView;
 
-import com.glabs.homegenie.service.Control;
+import com.glabs.homegenie.client.Control;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -51,6 +51,7 @@ import org.apache.http.client.methods.HttpGet;
 
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 /**
  * helper task for downloading a bitmap image from http and setting it to given image view asynchronously
@@ -67,6 +68,7 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
     private String url;
     protected final WeakReference<ImageView> imageViewReference;
     protected WeakReference<Bitmap> imageBitmap = new WeakReference<Bitmap>(null);
+    private static HashMap<String, Bitmap> imageCache = new HashMap<String, Bitmap>();
     private ImageDownloadListener listener;
     private boolean animate = false;
 
@@ -89,7 +91,12 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
      * @param imageView
      */
     public void download(String url, ImageView imageView) {
-        if (cancelPotentialDownload(url, imageView)) {
+        if (imageCache.containsKey(url)) {
+            Bitmap bitmap = imageCache.get(url);
+            setImage(imageView, bitmap);
+            if (listener != null)
+                listener.imageDownloaded(url, bitmap);  //call back
+        } else if (cancelPotentialDownload(url, imageView)) {
             AsyncImageDownloadTask task = new AsyncImageDownloadTask(imageView, animate, listener);
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
             imageView.setImageDrawable(downloadedDrawable);
@@ -99,7 +106,8 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
 
     @Override
     protected Bitmap doInBackground(String... params) {
-        return downloadBitmap(params[0]);
+        this.url = params[0];
+        return downloadBitmap(this.url);
     }
 
     @Override
@@ -114,25 +122,30 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
             AsyncImageDownloadTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
             // Change bitmap only if this process is still associated with it
             if (this == bitmapDownloaderTask) {
-                if (animate) {
-                    Resources resources = imageView.getResources();
-                    BitmapDrawable drawable = new BitmapDrawable(resources, bitmap);
-                    Drawable currentDrawable = imageView.getDrawable();
-                    if (currentDrawable != null) {
-                        Drawable[] arrayDrawable = new Drawable[2];
-                        arrayDrawable[0] = currentDrawable;
-                        arrayDrawable[1] = drawable;
-                        final TransitionDrawable transitionDrawable = new TransitionDrawable(arrayDrawable);
-                        transitionDrawable.setCrossFadeEnabled(true);
-                        imageView.setImageDrawable(transitionDrawable);
-                        transitionDrawable.startTransition(150);
-                    } else {
-                        imageView.setImageDrawable(drawable);
-                    }
-                } else {
-                    imageView.setImageBitmap(bitmap);
-                }
+                imageCache.put(url, bitmap);
+                setImage(imageView, bitmap);
             }
+        }
+    }
+
+    private void setImage(ImageView imageView, Bitmap bitmap) {
+        if (animate) {
+            Resources resources = imageView.getResources();
+            BitmapDrawable drawable = new BitmapDrawable(resources, bitmap);
+            Drawable currentDrawable = imageView.getDrawable();
+            if (currentDrawable != null) {
+                Drawable[] arrayDrawable = new Drawable[2];
+                arrayDrawable[0] = currentDrawable;
+                arrayDrawable[1] = drawable;
+                final TransitionDrawable transitionDrawable = new TransitionDrawable(arrayDrawable);
+                transitionDrawable.setCrossFadeEnabled(true);
+                imageView.setImageDrawable(transitionDrawable);
+                transitionDrawable.startTransition(150);
+            } else {
+                imageView.setImageDrawable(drawable);
+            }
+        } else {
+            imageView.setImageBitmap(bitmap);
         }
     }
 

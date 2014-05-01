@@ -24,6 +24,7 @@ package com.glabs.homegenie.fragments;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -39,12 +40,13 @@ import android.widget.ListView;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.StartActivity;
+import com.glabs.homegenie.adapters.GenericWidgetAdapter;
 import com.glabs.homegenie.adapters.GroupsFragmentAdapter;
 import com.glabs.homegenie.adapters.ModulesAdapter;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Group;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.Group;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.data.ModuleParameter;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -72,19 +74,14 @@ public class GroupsViewFragment extends Fragment {
     private int mCurrentGroup = 0;
     private ArrayList<Module> mGroupPrograms = new ArrayList<Module>();
 
-    public void loadGroups(final Control.GetGroupsCallback callback) {
-        Control.getGroups(new Control.GetGroupsCallback() {
 
-            @Override
-            public void groupsUpdated(boolean success, ArrayList<Group> groups) {
-                if (success) {
-                    mAdapter.setGroups(groups);
-                    UpdateJumpToGroupMenu(groups);
-                }
-                callback.groupsUpdated(success, groups);
-            }
-        });
+    public void setGroups(ArrayList<Group> groups) {
+        mCurrentGroup = 0;
+        mAdapter.setGroups(groups);
+        mIndicator.setCurrentItem(0);
+        UpdateJumpToGroupMenu(groups);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -101,24 +98,19 @@ public class GroupsViewFragment extends Fragment {
         mIndicator.setCurrentItem(mCurrentGroup);
         //
         mIndicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-
             @Override
             public void onPageSelected(int pindex) {
-
-                _updateCurrentPage(pindex);
-
+                _setCurrentGroup(pindex);
             }
 
             @Override
             public void onPageScrolled(int arg0, float arg1, int arg2) {
                 // TODO Auto-generated method stub
-
             }
 
             @Override
             public void onPageScrollStateChanged(int arg0) {
                 // TODO Auto-generated method stub
-
             }
         });
         return v;
@@ -204,110 +196,85 @@ public class GroupsViewFragment extends Fragment {
 //                    return true;
 //                }
 //            });
-            //
-            //
-
 //            rootactivity.supportInvalidateOptionsMenu();
         }
     }
 
-    public void UpdateCurrentGroupModules(final Control.GetGroupModulesCallback callback) {
-        final StartActivity sa = (StartActivity) getActivity();
-        if (sa != null) {
-            sa.loaderShow();
-            _updateGroupModules(mCurrentGroup, new Control.GetGroupModulesCallback() {
-                @Override
-                public void groupModulesUpdated(ArrayList<Module> modules) {
-                    sa.loaderHide();
-                    callback.groupModulesUpdated(modules);
-                }
-            });
+    public void UpdateCurrentGroupModules() {
+        ArrayList<Module> modules = mAdapter.getGroup(mCurrentGroup).Modules;
+        ArrayList<Module> controlModules = new ArrayList<Module>();
+        mGroupPrograms.clear();
+        for (Module m : modules) {
+            if (m == null) continue;
+            ModuleParameter widgetParam = m.getParameter("Widget.DisplayModule");
+            String widget = "";
+            if (widgetParam != null) widget = widgetParam.Value;
+            if (widget.equals("homegenie/generic/program")) {
+                mGroupPrograms.add(m);
+            } else {
+                controlModules.add(m);
+            }
+        }
+        //
+        GroupFragment f = mAdapter.getItem(mCurrentGroup);
+        View v = f.getView();
+        if (v != null) {
+            ListView lv = (ListView) v.findViewById(R.id.listView);
+            if (lv.getAdapter() == null) {
+                ModulesAdapter adapter;
+                adapter = new ModulesAdapter(v.getContext(), R.layout.widget_item_generic, controlModules);
+                mAdapterList.put(mCurrentGroup, adapter);
+                lv.setAdapter(adapter);
+                lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        Module module = (Module) view.getTag();
+                        if (module != null && module.Adapter != null) {
+                            ModuleDialogFragment fmWidget = ((GenericWidgetAdapter) module.Adapter).getControlFragment();
+                            if (fmWidget != null) {
+                                fmWidget.setDataModule(module);
+                                //
+                                FragmentManager fm = getActivity().getSupportFragmentManager();
+                                FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                //
+                                fragmentTransaction.add(fmWidget, "WIDGET");
+                                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                                fragmentTransaction.commit();
+                            } else {
+                                Intent acWidgetIntent = ((GenericWidgetAdapter) module.Adapter).getControlActivityIntent(module);
+                                if (acWidgetIntent != null) {
+                                    startActivity(acWidgetIntent);
+                                    getActivity().overridePendingTransition(R.anim.right_slide_in, R.anim.left_slide_out);
+                                }
+                            }
+                        }
+
+                    }
+                });
+            } else {
+                ((ModulesAdapter) lv.getAdapter()).notifyDataSetChanged();
+            }
         }
     }
 
-    private void _updateCurrentPage(int pindex) {
+    private void _setCurrentGroup(int pindex) {
+        final Fragment f = mAdapter.getItem(mCurrentGroup);
+        if (f != null)
+        {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                    ft.detach(f);
+                    ft.attach(f);
+                    ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    ft.commit();
+                }
+            });
+        }
         mCurrentGroup = pindex;
-        UpdateCurrentGroupModules(new Control.GetGroupModulesCallback() {
-            @Override
-            public void groupModulesUpdated(ArrayList<Module> modules) {
-                StartActivity sa = (StartActivity) getActivity();
-                if (sa.getActionMenu() != null) {
-                    UpdateCurrentGroupMenu();
-                    MenuItem adminitem = sa.getActionMenu().findItem(R.id.action_admin);
-                    if (adminitem != null && sa._islogovisible) {
-                        adminitem.setEnabled(false);
-                    } else if (adminitem != null) {
-                        adminitem.setEnabled(true);
-                    }
-                }
-            }
-        });
+        UpdateCurrentGroupModules();
+        UpdateCurrentGroupMenu();
     }
-
-    private void _updateGroupModules(final int pindex, final Control.GetGroupModulesCallback callback) {
-
-        Control.getGroupModules(mAdapter.getGroup(pindex).Name, new Control.GetGroupModulesCallback() {
-            @Override
-            public void groupModulesUpdated(final ArrayList<Module> modules) {
-                mGroupPrograms.clear();
-                for (Module m : modules) {
-                    ModuleParameter widgetParam = m.getParameter("Widget.DisplayModule");
-                    String widget = "";
-                    if (widgetParam != null) widget = widgetParam.Value;
-                    if (widget.equals("homegenie/generic/program")) {
-                        mGroupPrograms.add(m);
-                    }
-                }
-                modules.removeAll(mGroupPrograms);
-                //
-                GroupFragment f = mAdapter.getItem(pindex);
-                View v = f.getView();
-                if (v != null) {
-                    ModulesAdapter adapter;
-                    if (mAdapterList.containsKey(pindex)) {
-                        adapter = mAdapterList.get(pindex);
-                        adapter.setModules(modules);
-                    } else {
-                        adapter = new ModulesAdapter(v.getContext(), R.layout.widget_item_generic, modules);
-                        mAdapterList.put(pindex, adapter);
-                    }
-                    ListView lv = (ListView) v.findViewById(R.id.listView);
-                    if (lv.getAdapter() == null) {
-                        lv.setAdapter(adapter);
-                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                                Module module = (Module) view.getTag();
-                                if (module != null && module.Adapter != null) {
-                                    ModuleDialogFragment fmWidget = module.Adapter.getControlFragment();
-                                    if (fmWidget != null) {
-                                        fmWidget.setDataModule(module);
-                                        //
-                                        FragmentManager fm = getActivity().getSupportFragmentManager();
-                                        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                                        //
-                                        fragmentTransaction.add(fmWidget, "WIDGET");
-                                        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                                        fragmentTransaction.commit();
-                                    } else {
-                                        Intent acWidgetIntent = module.Adapter.getControlActivityIntent(module);
-                                        if (acWidgetIntent != null) {
-                                            startActivity(acWidgetIntent);
-                                            getActivity().overridePendingTransition(R.anim.right_slide_in, R.anim.left_slide_out);
-                                        }
-                                    }
-                                }
-
-                            }
-                        });
-                    }
-                }
-                callback.groupModulesUpdated(modules);
-
-            }
-        });
-    }
-
 
 }

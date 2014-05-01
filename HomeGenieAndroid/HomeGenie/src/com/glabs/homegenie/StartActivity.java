@@ -24,6 +24,7 @@ package com.glabs.homegenie;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,16 +42,22 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.glabs.homegenie.adapters.GenericWidgetAdapter;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.Event;
+import com.glabs.homegenie.client.data.Group;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.eventsource.EventSourceListener;
 import com.glabs.homegenie.fragments.ErrorDialogFragment;
 import com.glabs.homegenie.fragments.GroupsViewFragment;
 import com.glabs.homegenie.fragments.MacroRecordDialogFragment;
 import com.glabs.homegenie.fragments.SettingsFragment;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Group;
-import com.glabs.homegenie.service.data.Module;
+import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.util.UpnpManager;
 import com.glabs.homegenie.util.VoiceControl;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
@@ -60,7 +67,7 @@ import java.util.ArrayList;
 
 /**
  */
-public class StartActivity extends FragmentActivity {
+public class StartActivity extends FragmentActivity implements EventSourceListener {
 
     //variable for checking Voice Recognition support on user device
     private static final int VR_REQUEST = 1;
@@ -68,7 +75,10 @@ public class StartActivity extends FragmentActivity {
     public final String PREFS_NAME = "HomeGenieService";
     private GroupsViewFragment mGroupsViewFragment;
     private LinearLayout mLoadingCircle;
-    private int mInterval = 10000; // 10 seconds by default, can be changed later
+    private TextView mLoaderText;
+    private TextView mEventText;
+    private ImageView mEventIcon;
+
     private Handler mHandler;
     private Menu _actionmenu;
     private boolean _ispaused = false;
@@ -79,18 +89,11 @@ public class StartActivity extends FragmentActivity {
     private Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
-            mGroupsViewFragment.UpdateCurrentGroupModules(new Control.GetGroupModulesCallback() {
-                @Override
-                public void groupModulesUpdated(ArrayList<Module> modules) {
-
-                    Fragment widgetpopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
-                    if (widgetpopup != null && widgetpopup instanceof ModuleDialogFragment) {
-                        ((ModuleDialogFragment) widgetpopup).refreshView();
-                    }
-                    mHandler.postDelayed(mStatusChecker, mInterval);
-
-                }
-            });
+            mGroupsViewFragment.UpdateCurrentGroupModules();
+            Fragment widgetpopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
+            if (widgetpopup != null && widgetpopup instanceof ModuleDialogFragment) {
+                ((ModuleDialogFragment) widgetpopup).refreshView();
+            }
         }
     };
 
@@ -107,16 +110,16 @@ public class StartActivity extends FragmentActivity {
         setContentView(R.layout.activity_start);
 
         mLoadingCircle = (LinearLayout) findViewById(R.id.loadingCircle);
+        mLoaderText = (TextView) findViewById(R.id.tapoptions);
+        mEventText = (TextView) findViewById(R.id.eventStatus);
+        mEventIcon = (ImageView) findViewById(R.id.eventIcon);
+
         mGroupsViewFragment = new GroupsViewFragment();
-
-        Control.setContext(this);
-
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         fragmentTransaction.add(R.id.fragmentMain, mGroupsViewFragment, "Groups");
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         fragmentTransaction.commit();
-
     }
 
     @Override
@@ -124,25 +127,14 @@ public class StartActivity extends FragmentActivity {
         super.onResume();
         _ispaused = false;
 
-        // Read preferences
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        // Set HG coordinates
-        Control.setHgServer(
-                settings.getString("serviceAddress", "127.0.0.1"),
-                settings.getString("serviceUsername", "admin"),
-                settings.getString("servicePassword", "")
-        );
-
-        if (settings.getString("serviceAddress", "127.0.0.1").equals("127.0.0.1")) {
-            showLogo();
-            showSettings();
-        } else {
-            updateGroups();
-        }
-
         if (_upnpmanager == null) {
             _upnpmanager = new UpnpManager(this);
             _upnpmanager.bind();
+        }
+
+        // Connect to HomeGenie service
+        if (Control.getGroups() == null && Control.getModules() == null) {
+            homegenieConnect();
         }
     }
 
@@ -158,7 +150,6 @@ public class StartActivity extends FragmentActivity {
             _upnpmanager.unbind();
             _upnpmanager = null;
         }
-
     }
 
     @Override
@@ -172,9 +163,63 @@ public class StartActivity extends FragmentActivity {
 
     @Override
     protected void onDestroy() {
+        homegenieDisconnect();
         super.onDestroy();
     }
 
+    public void homegenieConnect() {
+        // Reset groups fragment
+        mGroupsViewFragment.setGroups(new ArrayList<Group>());
+        // Read preferences, if empty let's show the settings dialog
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        if (settings.getString("serviceAddress", "127.0.0.1").equals("127.0.0.1")) {
+            showLogo();
+            showSettings();
+        } else {
+            loaderShow();
+            if (mHandler != null) {
+                mHandler.removeCallbacksAndMessages(null);
+            }
+            final StartActivity hgcontext = this;
+            Control.setServer(
+                    settings.getString("serviceAddress", "127.0.0.1"),
+                    settings.getString("serviceUsername", "admin"),
+                    settings.getString("servicePassword", "")
+            );
+            Control.connect(new Control.UpdateGroupsAndModulesCallback() {
+                @Override
+                public void groupsAndModulesUpdated(boolean success) {
+                    if (success) {
+                        mGroupsViewFragment.setGroups(Control.getGroups());
+                        hideLogo();
+                        //
+                        if (_voicecontrol == null) {
+                            _voicecontrol = new VoiceControl(hgcontext);
+                        }
+                    } else {
+                        FragmentManager fm = getSupportFragmentManager();
+                        if (!_ispaused) {
+                            if (fm.findFragmentByTag("SETTINGS") == null || !fm.findFragmentByTag("SETTINGS").isVisible()) {
+                                if (fm.findFragmentByTag("ERROR") == null || !fm.findFragmentByTag("ERROR").isVisible()) {
+                                    ErrorDialogFragment fmWidget = new ErrorDialogFragment();
+                                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                    fragmentTransaction.add(fmWidget, "ERROR");
+                                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                                    fragmentTransaction.commit();
+                                }
+                            }
+                        }
+                    }
+                    updateGroupModules();
+                    loaderHide();
+                }
+            }, this);
+        }
+    }
+
+    public void homegenieDisconnect() {
+        Control.disconnect();
+    }
 
     public void hideLogo() {
         _islogovisible = false;
@@ -220,6 +265,7 @@ public class StartActivity extends FragmentActivity {
             @Override
             public void run() {
                 mLoadingCircle.setVisibility(View.VISIBLE);
+                mLoaderText.setText("Connecting to HomeGenie");
             }
         });
     }
@@ -229,6 +275,7 @@ public class StartActivity extends FragmentActivity {
             @Override
             public void run() {
                 mLoadingCircle.setVisibility(View.GONE);
+                mLoaderText.setText("Tap Options menu for Settings");
             }
         });
     }
@@ -252,48 +299,14 @@ public class StartActivity extends FragmentActivity {
     }
 
     public void updateGroupModules() {
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-        }
-        mHandler = new Handler();
-        //startRepeatingTask();
-        mHandler.postDelayed(mStatusChecker, 1000);
-    }
-
-
-    public void updateGroups() {
-        loaderShow();
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-        }
-        final StartActivity hgcontext = this;
-        mGroupsViewFragment.loadGroups(new Control.GetGroupsCallback() {
-            @Override
-            public void groupsUpdated(boolean success, ArrayList<Group> groups) {
-                loaderHide();
-                if (success && groups.size() > 0) {
-                    hideLogo();
-                    mHandler = new Handler();
-                    startRepeatingTask();
-                    //
-                    if (_voicecontrol == null) {
-                        _voicecontrol = new VoiceControl(hgcontext);
-                    }
-                } else {
-                    // TODO ....
-                    FragmentManager fm = getSupportFragmentManager();
-                    if (!_ispaused)
-                        if (fm.findFragmentByTag("SETTINGS") == null || !fm.findFragmentByTag("SETTINGS").isVisible())
-                            if (fm.findFragmentByTag("ERROR") == null || !fm.findFragmentByTag("ERROR").isVisible()) {
-                                ErrorDialogFragment fmWidget = new ErrorDialogFragment();
-                                FragmentTransaction fragmentTransaction = fm.beginTransaction();
-                                fragmentTransaction.add(fmWidget, "ERROR");
-                                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                                fragmentTransaction.commit();
-                            }
-                }
+        if (Control.getGroups() != null && Control.getModules() != null) {
+            if (mHandler != null) {
+                mHandler.removeCallbacksAndMessages(null);
             }
-        });
+            mHandler = new Handler();
+            //startRepeatingTask();
+            mHandler.postDelayed(mStatusChecker, 300);
+        }
     }
 
     public void showOptionsMenu() {
@@ -382,17 +395,54 @@ public class StartActivity extends FragmentActivity {
         return _actionmenu;
     }
 
-    private void startRepeatingTask() {
-        mStatusChecker.run();
-    }
-
-    private void stopRepeatingTask() {
-        mHandler.removeCallbacks(mStatusChecker);
-    }
-
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
     }
 
+    @Override
+    public void onSseConnect() {
+
+    }
+
+    @Override
+    public void onSseEvent(final Event event) {
+
+        if (event.Property.equals("Program.Status")) return;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateGroupModules();
+                //
+                String displayName = event.Domain + "." + event.Source;
+                Module module = Control.getModule(event.Domain, event.Source);
+                if (module != null) {
+                    final String imageUrl = Control.getHgBaseHttpAddress() + GenericWidgetAdapter.getModuleIcon(module);
+                    if (mEventIcon.getTag() == null || !mEventIcon.getTag().equals(imageUrl) && !(mEventIcon.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
+                        AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(mEventIcon, true, new AsyncImageDownloadTask.ImageDownloadListener() {
+                            @Override
+                            public void imageDownloadFailed(String url) {
+                            }
+
+                            @Override
+                            public void imageDownloaded(String url, Bitmap downloadedImage) {
+                                mEventIcon.setTag(imageUrl);
+                            }
+                        });
+                        asyncDownloadTask.download(imageUrl, mEventIcon);
+                    }
+                    displayName = module.getDisplayName() + " (" + module.getDisplayAddress() + ")";
+                }
+                //
+                mEventText.setText(displayName + "\n" + event.Property + " " + event.Value.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n"));
+            }
+        });
+
+    }
+
+    @Override
+    public void onSseError(String error) {
+
+    }
 }

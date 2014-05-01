@@ -30,9 +30,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.service.Control;
-import com.glabs.homegenie.service.data.Module;
-import com.glabs.homegenie.service.data.ModuleParameter;
+import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.data.ModuleParameter;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.ColorLightDialogFragment;
 import com.glabs.homegenie.widgets.ColorLightRGBDialogFragment;
@@ -40,6 +40,7 @@ import com.glabs.homegenie.widgets.DimmerLightDialogFragment;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Gene on 05/01/14.
@@ -166,7 +167,7 @@ public class GenericWidgetAdapter {
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/sensor.png";
                     break;
                 case DoorWindow:
-                    if (statussuffix == "on") statussuffix = "open";
+                    if (statussuffix.equals("on")) statussuffix = "open";
                     else statussuffix = "closed";
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/door_" + statussuffix + ".png";
                     break;
@@ -181,7 +182,7 @@ public class GenericWidgetAdapter {
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/fan.png";
                     break;
                 case Shutter:
-                    if (statussuffix == "on") statussuffix = "open";
+                    if (statussuffix.equals("on")) statussuffix = "open";
                     else statussuffix = "closed";
                     imageurl = "/hg/html/pages/control/widgets/homegenie/generic/images/shutters_" + statussuffix + ".png";
                     break;
@@ -248,6 +249,7 @@ public class GenericWidgetAdapter {
         infotext.setVisibility(View.INVISIBLE);
         //
         String status = "";
+        Date updateDate = null;
         String updateTimestamp = "";
         ModuleParameter statusLevel = module.getParameter("Status.Level");
         if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals("")) {
@@ -263,10 +265,15 @@ public class GenericWidgetAdapter {
             } else {
                 status = "off";
             }
+            if (_module.DeviceType.equals("Shutter")) {
+                if (status.equals("off")) {
+                    status = "Closed";
+                } else if (status.equals("on")) {
+                    status = "Open";
+                }
+            }
             if (statusLevel != null) {
-                updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(statusLevel.UpdateTime);
-                infotext.setText(updateTimestamp);
-                infotext.setVisibility(View.VISIBLE);
+                updateDate = statusLevel.UpdateTime;
             }
         }
         _updatePropertyBox(convertView, R.id.propLevel, "Status", status.toUpperCase());
@@ -307,9 +314,9 @@ public class GenericWidgetAdapter {
         //
         ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
         if (doorwindowProp != null && doorwindowProp.Value != null) {
-            updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(doorwindowProp.UpdateTime);
-            infotext.setText(updateTimestamp);
-            infotext.setVisibility(View.VISIBLE);
+            if (updateDate == null || doorwindowProp.UpdateTime.after(updateDate)) {
+                updateDate = doorwindowProp.UpdateTime;
+            }
             // hide Status.Level
             _updatePropertyBox(convertView, R.id.propLevel, "Status", "");
         }
@@ -321,23 +328,42 @@ public class GenericWidgetAdapter {
         //
         ModuleParameter statusBattery = module.getParameter("Status.Battery");
         String battery = "";
-        if (statusBattery != null) battery = Module.getFormattedNumber(statusBattery.Value);
+        if (statusBattery != null && statusBattery.Value != null) {
+            battery = Module.getFormattedNumber(statusBattery.Value);
+            if (updateDate == null || statusBattery.UpdateTime.after(updateDate)) {
+                updateDate = statusBattery.UpdateTime;
+            }
+        }
         _updatePropertyBox(convertView, R.id.propBattery, "Bat.%", battery);
         //
         ModuleParameter sensorTemperature = module.getParameter("Sensor.Temperature");
         String temperature = "";
-        if (sensorTemperature != null)
+        if (sensorTemperature != null && sensorTemperature.Value != null) {
             temperature = Module.getFormattedNumber(sensorTemperature.Value);
+            if (updateDate == null || sensorTemperature.UpdateTime.after(updateDate)) {
+                updateDate = sensorTemperature.UpdateTime;
+            }
+        }
         _updatePropertyBox(convertView, R.id.propTemperature, "Temp.℃", temperature);
         //
         ModuleParameter sensorHumidity = module.getParameter("Sensor.Humidity");
         String humidity = "";
-        if (sensorHumidity != null) humidity = Module.getFormattedNumber(sensorHumidity.Value);
+        if (sensorHumidity != null && sensorHumidity.Value != null) {
+            humidity = Module.getFormattedNumber(sensorHumidity.Value);
+            if (updateDate == null || sensorHumidity.UpdateTime.after(updateDate)) {
+                updateDate = sensorHumidity.UpdateTime;
+            }
+        }
         _updatePropertyBox(convertView, R.id.propHumidity, "Hum.%", humidity);
         //
         ModuleParameter sensorLuminance = module.getParameter("Sensor.Luminance");
         String luminance = "";
-        if (sensorLuminance != null) luminance = Module.getFormattedNumber(sensorLuminance.Value);
+        if (sensorLuminance != null && sensorLuminance.Value != null) {
+            luminance = Module.getFormattedNumber(sensorLuminance.Value);
+            if (updateDate == null || sensorLuminance.UpdateTime.after(updateDate)) {
+                updateDate = sensorLuminance.UpdateTime;
+            }
+        }
         _updatePropertyBox(convertView, R.id.propLuminance, "Lum.%", luminance);
         //
         ModuleParameter sensorDoorWindow = module.getParameter("Sensor.DoorWindow");
@@ -356,23 +382,34 @@ public class GenericWidgetAdapter {
         //
         ModuleParameter sensorMotion = module.getParameter("Sensor.MotionDetect");
         String motiondetected = "";
-        if (sensorMotion != null) motiondetected = Module.getDisplayLevel(sensorMotion.Value);
+        if (sensorMotion != null && !sensorMotion.Value.equals("")) {
+            motiondetected = Module.getDisplayLevel(sensorMotion.Value);
+            if (updateDate == null || sensorMotion.UpdateTime.after(updateDate)) {
+                updateDate = sensorMotion.UpdateTime;
+            }
+        }
         _updatePropertyBox(convertView, R.id.propMotionDetect, "Motion", motiondetected);
         //
+        if (updateDate != null) {
+            updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(updateDate);
+            infotext.setText(updateTimestamp);
+            infotext.setVisibility(View.VISIBLE);
+        }
+        //
         final ImageView image = (ImageView) convertView.findViewById(R.id.iconImage);
-        final String timestamp = updateTimestamp;
-        if (image.getTag() == null || !image.getTag().equals(timestamp) && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
+        final String imageUrl = Control.getHgBaseHttpAddress() + getModuleIcon(module);
+        if (image.getTag() == null || !image.getTag().equals(imageUrl) && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
-                public void imageDownloadFailed(String imageUrl) {
+                public void imageDownloadFailed(String url) {
                 }
 
                 @Override
-                public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
-                    image.setTag(timestamp);
+                public void imageDownloaded(String url, Bitmap downloadedImage) {
+                    image.setTag(imageUrl);
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(module), image);
+            asyncDownloadTask.download(imageUrl, image);
             //image.setTag(asyncDownloadTask);
         }
 
