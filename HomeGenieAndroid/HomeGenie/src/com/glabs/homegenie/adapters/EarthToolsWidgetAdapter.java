@@ -22,6 +22,7 @@
 package com.glabs.homegenie.adapters;
 
 import android.graphics.Bitmap;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -91,7 +92,10 @@ public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
         _updatePropertyBox(_module.View, R.id.propLongitude, "Long.", longitude);
         //
         if (sunriseParam != null) {
-            String updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
+            //String updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
+            String updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(sunriseParam.UpdateTime) + " " +
+                    DateFormat.getTimeFormat(_module.View.getContext()).format(sunriseParam.UpdateTime);
+
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }

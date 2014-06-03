@@ -29,7 +29,9 @@ import com.glabs.homegenie.adapters.EarthToolsWidgetAdapter;
 import com.glabs.homegenie.adapters.GenericWidgetAdapter;
 import com.glabs.homegenie.adapters.MediaRendererWidgetAdapter;
 import com.glabs.homegenie.adapters.MediaServerWidgetAdapter;
+import com.glabs.homegenie.adapters.OpenWeatherWidgetAdapter;
 import com.glabs.homegenie.adapters.SecurityWidgetAdapter;
+import com.glabs.homegenie.adapters.SolarAltitudeWidgetAdapter;
 import com.glabs.homegenie.adapters.StatusWidgetAdapter;
 import com.glabs.homegenie.adapters.WundergroundWidgetAdapter;
 import com.glabs.homegenie.client.data.Module;
@@ -46,6 +48,10 @@ public class ModuleWidgetHolder {
         ModuleParameter widgetParam = module.getParameter("Widget.DisplayModule");
         if (widgetParam != null && widgetParam.Value.equals("weather/earthtools/sundata")) {
             _adapter = new EarthToolsWidgetAdapter(module);
+        } else if (widgetParam != null && widgetParam.Value.equals("jkUtils/SolarAltitude/SolarAltitude")) {
+            _adapter = new SolarAltitudeWidgetAdapter(module);
+        } else if (widgetParam != null && widgetParam.Value.equals("jkUtils/OpenWeatherMap/OpenWeatherMap")) {
+            _adapter = new OpenWeatherWidgetAdapter(module);
         } else if (widgetParam != null && widgetParam.Value.equals("weather/wunderground/conditions")) {
             _adapter = new WundergroundWidgetAdapter(module);
         } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/securitysystem")) {

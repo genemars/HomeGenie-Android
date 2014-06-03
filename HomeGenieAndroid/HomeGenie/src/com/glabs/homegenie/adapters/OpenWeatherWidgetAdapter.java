@@ -21,6 +21,7 @@
 
 package com.glabs.homegenie.adapters;
 
+import android.graphics.Bitmap;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,17 +29,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
+import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.util.AsyncImageDownloadTask;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Gene on 05/01/14.
  */
-public class WundergroundWidgetAdapter extends GenericWidgetAdapter {
+public class OpenWeatherWidgetAdapter extends GenericWidgetAdapter {
 
-    public WundergroundWidgetAdapter(Module module) {
+    public OpenWeatherWidgetAdapter(Module module) {
         super(module);
     }
 
@@ -68,52 +71,54 @@ public class WundergroundWidgetAdapter extends GenericWidgetAdapter {
         subtitle.setText(_module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
-        ModuleParameter sunriseParam = _module.getParameter("Astronomy.Sunrise");
+        ModuleParameter sunriseParam = _module.getParameter("jkUtils.OpenWeatherMap.Sys.Sunrise");
         String sunrise = "";
-        if (sunriseParam != null) sunrise = sunriseParam.Value;
+        if (sunriseParam != null && !sunriseParam.Value.equals("")) {
+            sunrise = DateFormat.getTimeFormat(_module.View.getContext()).format(new Date(Long.parseLong(sunriseParam.Value)*1000));
+        }
         _updatePropertyBox(_module.View, R.id.propSunrise, "Sunrise", sunrise);
         //
-        ModuleParameter sunsetParam = _module.getParameter("Astronomy.Sunset");
+        ModuleParameter sunsetParam = _module.getParameter("jkUtils.OpenWeatherMap.Sys.Sunset");
         String sunset = "";
-        if (sunsetParam != null) sunset = sunsetParam.Value;
+        if (sunriseParam != null && !sunsetParam.Value.equals("")) {
+            sunset = DateFormat.getTimeFormat(_module.View.getContext()).format(new Date(Long.parseLong(sunsetParam.Value)*1000));
+        }
         _updatePropertyBox(_module.View, R.id.propSunset, "Sunset", sunset);
         //
-        ModuleParameter displayCelsius = _module.getParameter("Conditions.DisplayCelsius");
+        ModuleParameter displayCelsius = _module.getParameter("ConfigureOptions.Custom Display Units");
+        ModuleParameter sensorTemperature = _module.getParameter("jkUtils.OpenWeatherMap.Main.Temp");
+        String temperature = "";
         if (displayCelsius != null && displayCelsius.Value.toLowerCase().equals("true"))
         {
-            ModuleParameter sensorTemperature = _module.getParameter("Conditions.TemperatureC");
-            String temperature = "";
             if (sensorTemperature != null)
                 temperature = Module.getFormattedNumber(sensorTemperature.Value);
             _updatePropertyBox(_module.View, R.id.propTemperature, "Temp.℃", temperature);
         }
         else
         {
-            ModuleParameter sensorTemperature = _module.getParameter("Conditions.TemperatureF");
-            String temperature = "";
             if (sensorTemperature != null)
                 temperature = Module.getFormattedNumber(sensorTemperature.Value);
             _updatePropertyBox(_module.View, R.id.propTemperature, "Temp.℉", temperature);
         }
         //
-        ModuleParameter sensorPressure = _module.getParameter("Conditions.PressureMb");
+        ModuleParameter sensorPressure = _module.getParameter("jkUtils.OpenWeatherMap.Main.Pressure");
         String pressure = "";
         if (sensorPressure != null) pressure = Module.getFormattedNumber(sensorPressure.Value);
         _updatePropertyBox(_module.View, R.id.propPressure, "Press.mb", pressure);
         //
-        ModuleParameter sensorPrecipitations = _module.getParameter("Conditions.PrecipitationHourMetric");
+        ModuleParameter sensorPrecipitations = _module.getParameter("jkUtils.OpenWeatherMap.Rain.H1");
         String precipitations = "";
         if (sensorPrecipitations != null)
             precipitations = Module.getFormattedNumber(sensorPrecipitations.Value);
-        _updatePropertyBox(_module.View, R.id.propPrecipitations, "Precip.h/m", precipitations);
+        _updatePropertyBox(_module.View, R.id.propPrecipitations, "Precip.mm/h", precipitations);
         //
-        ModuleParameter condLocation = _module.getParameter("Conditions.DisplayLocation");
+        ModuleParameter condLocation = _module.getParameter("jkUtils.OpenWeatherMap.Name");
         String location = "";
         if (condLocation != null) location = condLocation.Value;
         TextView tv1 = (TextView) _module.View.findViewById(R.id.condLocation);
         tv1.setText(location);
         //
-        ModuleParameter condDescription = _module.getParameter("Conditions.Description");
+        ModuleParameter condDescription = _module.getParameter("jkUtils.OpenWeatherMap.Weather.Description");
         String description = "";
         if (condDescription != null) description = condDescription.Value;
         TextView tv2 = (TextView) _module.View.findViewById(R.id.condDescription);
@@ -129,23 +134,20 @@ public class WundergroundWidgetAdapter extends GenericWidgetAdapter {
             infotext.setVisibility(View.VISIBLE);
         }
 
-        ModuleParameter iconUrl = _module.getParameter("Conditions.IconUrl");
-        int imageres = 0;
-        if (iconUrl != null) {
-            String fname = iconUrl.Value.substring(iconUrl.Value.lastIndexOf('/') + 1);
-            fname = fname.replace(".gif", "");
-            if (fname.startsWith("nt_")) {
-                fname = "weather_night_" + fname.replace("nt_", ""); // + ".png";
-            } else {
-                fname = "weather_day_" + fname; // + ".png";
-            }
-            imageres = _module.View.getResources().getIdentifier(fname, "drawable", _module.View.getContext().getApplicationContext().getPackageName());
-        }
         final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
-        final String timestamp = updateTimestamp;
-        if (imageres > 0 && (image.getTag() == null || !image.getTag().equals(timestamp))) {
-            image.setImageResource(imageres);
-            image.setTag(timestamp);
+        ModuleParameter iconUrl = _module.getParameter("jkUtils.OpenWeatherMap.Weather.Icon");
+        if (iconUrl != null && image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
+            AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
+                @Override
+                public void imageDownloadFailed(String imageUrl) {
+                }
+
+                @Override
+                public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
+                    image.setTag("CACHED");
+                }
+            });
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + "/hg/html/pages/control/widgets/jkUtils/OpenWeatherMap/images/icons/" + iconUrl.Value + ".png", image);
         }
 
     }

@@ -51,6 +51,7 @@ import com.glabs.homegenie.widgets.ModuleDialogFragment;
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TitlePageIndicator;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -82,6 +83,21 @@ public class GroupsViewFragment extends Fragment {
         UpdateJumpToGroupMenu(groups);
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        try {
+            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
+            childFragmentManager.setAccessible(true);
+            childFragmentManager.set(this, null);
+
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -201,7 +217,14 @@ public class GroupsViewFragment extends Fragment {
     }
 
     public void UpdateCurrentGroupModules() {
-        ArrayList<Module> modules = mAdapter.getGroup(mCurrentGroup).Modules;
+        ArrayList<Module> modules = null;
+        try
+        {
+            modules = mAdapter.getGroup(mCurrentGroup).Modules;
+        } catch (Exception e) {}
+        //
+        if (modules == null) return;
+        //
         ArrayList<Module> controlModules = new ArrayList<Module>();
         mGroupPrograms.clear();
         for (Module m : modules) {

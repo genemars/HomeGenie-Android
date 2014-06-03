@@ -24,6 +24,7 @@ package com.glabs.homegenie.adapters;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -58,6 +59,15 @@ public class GenericWidgetAdapter {
     }
 
     public static String getModuleIcon(Module module) {
+        //
+        // check for Widget.DisplayIcon field
+        //
+        ModuleParameter widgetIcon = module.getParameter("Widget.DisplayIcon");
+        if (widgetIcon != null && widgetIcon.Value != null && !widgetIcon.Value.equals(""))
+        {
+            return "/hg/html/" + widgetIcon.Value;
+        }
+        //
         ModuleParameter widgetProp = module.getParameter("Widget.DisplayModule");
         ModuleParameter statusLevel = module.getParameter("Status.Level");
         ModuleParameter doorwindowProp = module.getParameter("Sensor.DoorWindow");
@@ -391,7 +401,10 @@ public class GenericWidgetAdapter {
         _updatePropertyBox(convertView, R.id.propMotionDetect, "Motion", motiondetected);
         //
         if (updateDate != null) {
-            updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(updateDate);
+            //updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(updateDate);
+            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(updateDate) + " " +
+                    DateFormat.getTimeFormat(_module.View.getContext()).format(updateDate);
+
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }

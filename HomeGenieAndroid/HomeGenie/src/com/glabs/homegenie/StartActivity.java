@@ -33,6 +33,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,6 +47,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.glabs.homegenie.adapters.GenericWidgetAdapter;
 import com.glabs.homegenie.client.Control;
@@ -76,7 +78,9 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     private GroupsViewFragment mGroupsViewFragment;
     private LinearLayout mLoadingCircle;
     private TextView mLoaderText;
+    private TextView mDonateText;
     private TextView mEventText;
+    private TextView mEventTime;
     private ImageView mEventIcon;
 
     private Handler mHandler;
@@ -111,7 +115,9 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
         mLoadingCircle = (LinearLayout) findViewById(R.id.loadingCircle);
         mLoaderText = (TextView) findViewById(R.id.tapoptions);
+        mDonateText = (TextView) findViewById(R.id.donatetext);
         mEventText = (TextView) findViewById(R.id.eventStatus);
+        mEventTime = (TextView) findViewById(R.id.eventTime);
         mEventIcon = (ImageView) findViewById(R.id.eventIcon);
 
         mGroupsViewFragment = new GroupsViewFragment();
@@ -274,6 +280,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mDonateText.setVisibility(View.GONE);
                 mLoadingCircle.setVisibility(View.GONE);
                 mLoaderText.setText("Tap Options menu for Settings");
             }
@@ -336,7 +343,15 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             _actionmenu.findItem(R.id.action_recognition).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-                    _voicecontrol.startListen();
+                    if (_voicecontrol != null)
+                    {
+                        _voicecontrol.startListen();
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(), "Unable to instantiate Voice Control.",
+                                Toast.LENGTH_SHORT).show();
+                    }
                     return true;
                 }
             });
@@ -417,7 +432,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                 //
                 String displayName = event.Domain + "." + event.Source;
                 Module module = Control.getModule(event.Domain, event.Source);
-                if (module != null) {
+                boolean filtered = isFilteredEvent(event);
+                if (module != null && !filtered) {
                     final String imageUrl = Control.getHgBaseHttpAddress() + GenericWidgetAdapter.getModuleIcon(module);
                     if (mEventIcon.getTag() == null || !mEventIcon.getTag().equals(imageUrl) && !(mEventIcon.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
                         AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(mEventIcon, true, new AsyncImageDownloadTask.ImageDownloadListener() {
@@ -435,7 +451,11 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                     displayName = module.getDisplayName() + " (" + module.getDisplayAddress() + ")";
                 }
                 //
-                mEventText.setText(displayName + "\n" + event.Property + " " + event.Value.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n"));
+                if (!filtered)
+                {
+                    mEventText.setText(displayName + "\n" + event.Property + " " + event.Value.replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n"));
+                    mEventTime.setText(DateFormat.getTimeFormat(getApplicationContext()).format(event.Timestamp));
+                }
             }
         });
 
@@ -445,4 +465,18 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     public void onSseError(String error) {
 
     }
+
+    private boolean isFilteredEvent(Event event) {
+        boolean isFiltered = false;
+        if (event.Property.equals("Meter.Watts"))
+        {
+            try
+            {
+                double value = Double.parseDouble(event.Value);
+                if (value == 0) isFiltered = true;
+            } catch (Exception e) { }
+        }
+        return isFiltered;
+    }
+
 }

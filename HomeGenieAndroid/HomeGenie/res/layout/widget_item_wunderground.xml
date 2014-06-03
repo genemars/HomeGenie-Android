@@ -5,6 +5,7 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
     android:background="@android:color/black"
+    android:clickable="true"
     >
 
 

@@ -24,6 +24,7 @@ package com.glabs.homegenie.util;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,12 +39,23 @@ import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Group;
 import com.glabs.homegenie.client.data.Module;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -60,9 +72,79 @@ public class VoiceControl implements RecognitionListener {
     private String _currentInput = "";
     private LingoData _lingodata;
 
+    private ResponseHandler<String> _response_handler = new ResponseHandler<String>() {
+        public String handleResponse(final HttpResponse response)
+        throws HttpResponseException, IOException {
+            StatusLine statusLine = response.getStatusLine();
+            if (statusLine.getStatusCode() >= 300) {
+                throw new HttpResponseException(statusLine.getStatusCode(),
+                        statusLine.getReasonPhrase());
+            }
+
+            HttpEntity entity = response.getEntity();
+            return entity == null ? null : EntityUtils.toString(entity, "UTF-8");
+        }
+    };
+
+    class RetrieveLingoDataTask extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected String doInBackground(Void... noargs) {
+            try {
+                HttpGet getRequest = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "hg/html/locales/" + Locale.getDefault().getLanguage() + ".lingo.json");
+                DefaultHttpClient client = new DefaultHttpClient();
+                String data = client.execute(getRequest, _response_handler);
+                if (data.trim().equals(""))
+                {
+                    // fallback to english lingo definitions
+                    getRequest = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "hg/html/locales/en.lingo.json");
+                    client = new DefaultHttpClient();
+                    data = client.execute(getRequest, _response_handler);
+                }
+                return data;
+            } catch (Exception e) {
+                this.exception = e;
+                return "";
+            }
+        }
+
+        protected void onPostExecute(String data) {
+            try {
+                // Parse the data into jsonobject to get original data in form of json.
+                JSONObject jobject = new JSONObject(data);
+                JSONArray jtypes = jobject.getJSONArray("Types");
+                JSONArray jcommands = jobject.getJSONArray("Commands");
+                //
+                for (int i = 0; i < jtypes.length(); i++) {
+                    JSONObject type = jtypes.getJSONObject(i);
+                    LingoType ltype = new LingoType();
+                    ltype.Type = type.getString("Type");
+                    JSONArray aliases = type.getJSONArray("Aliases");
+                    for (int a = 0; a < aliases.length(); a++) {
+                        ltype.Aliases.add(aliases.getString(a));
+                    }
+                    _lingodata.Types.add(ltype);
+                }
+                for (int i = 0; i < jcommands.length(); i++) {
+                    JSONObject command = jcommands.getJSONObject(i);
+                    LingoCommand lcmd = new LingoCommand();
+                    lcmd.Command = command.getString("Command");
+                    JSONArray aliases = command.getJSONArray("Aliases");
+                    for (int a = 0; a < aliases.length(); a++) {
+                        lcmd.Aliases.add(aliases.getString(a));
+                    }
+                    _lingodata.Commands.add(lcmd);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public VoiceControl(StartActivity hgactivity) {
         _hgcontext = hgactivity;
-
 
         //find out whether speech recognition is supported
         PackageManager packManager = _hgcontext.getPackageManager();
@@ -74,70 +156,8 @@ public class VoiceControl implements RecognitionListener {
             Toast.makeText(_hgcontext, "Oops - Speech recognition not supported!", Toast.LENGTH_LONG).show();
         }
 
-
-        int lingodef = R.raw.lingo_en;
-
-        if (Locale.getDefault().getLanguage().equals("it")) {
-            lingodef = R.raw.lingo_it;
-        } else if (Locale.getDefault().getLanguage().equals("de")) {
-            lingodef = R.raw.lingo_de;
-        } else if (Locale.getDefault().getLanguage().equals("nl")) {
-            lingodef = R.raw.lingo_nl;
-        } else if (Locale.getDefault().getLanguage().equals("sv")) {
-            lingodef = R.raw.lingo_sv;
-        }
-        //
         _lingodata = new LingoData();
-        //
-        //Get Data From Text Resource File Contains Json Data.
-        InputStream inputStream = _hgcontext.getResources().openRawResource(lingodef);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        //
-        int ctr;
-        try {
-            ctr = inputStream.read();
-            while (ctr != -1) {
-                byteArrayOutputStream.write(ctr);
-                ctr = inputStream.read();
-            }
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //
-        String lingodata = byteArrayOutputStream.toString().replaceAll("[^\\x09-\\x7F]", "");
-        //
-        try {
-            // Parse the data into jsonobject to get original data in form of json.
-            JSONObject jobject = new JSONObject(lingodata);
-            JSONArray jtypes = jobject.getJSONArray("Types");
-            JSONArray jcommands = jobject.getJSONArray("Commands");
-            //
-            for (int i = 0; i < jtypes.length(); i++) {
-                JSONObject type = jtypes.getJSONObject(i);
-                LingoType ltype = new LingoType();
-                ltype.Type = type.getString("Type");
-                JSONArray aliases = type.getJSONArray("Aliases");
-                for (int a = 0; a < aliases.length(); a++) {
-                    ltype.Aliases.add(aliases.getString(a));
-                }
-                _lingodata.Types.add(ltype);
-            }
-            for (int i = 0; i < jcommands.length(); i++) {
-                JSONObject command = jcommands.getJSONObject(i);
-                LingoCommand lcmd = new LingoCommand();
-                lcmd.Command = command.getString("Command");
-                JSONArray aliases = command.getJSONArray("Aliases");
-                for (int a = 0; a < aliases.length(); a++) {
-                    lcmd.Aliases.add(aliases.getString(a));
-                }
-                _lingodata.Commands.add(lcmd);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        new RetrieveLingoDataTask().execute();
     }
 
 

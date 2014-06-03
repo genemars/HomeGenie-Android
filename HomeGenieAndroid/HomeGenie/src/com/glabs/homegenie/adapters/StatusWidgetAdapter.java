@@ -23,6 +23,7 @@ package com.glabs.homegenie.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -105,7 +106,10 @@ public class StatusWidgetAdapter extends GenericWidgetAdapter {
 
         if (lastUpdate != null) {
             String updateTimestamp;
-            updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(lastUpdate);
+            //updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(lastUpdate);
+            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(lastUpdate) + " " +
+                    DateFormat.getTimeFormat(_module.View.getContext()).format(lastUpdate);
+
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }

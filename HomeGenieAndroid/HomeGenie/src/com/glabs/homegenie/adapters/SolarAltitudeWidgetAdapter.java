@@ -21,14 +21,13 @@
 
 package com.glabs.homegenie.adapters;
 
+import android.app.Application;
 import android.graphics.Bitmap;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
@@ -41,9 +40,9 @@ import java.text.SimpleDateFormat;
 /**
  * Created by Gene on 05/01/14.
  */
-public class SecurityWidgetAdapter extends GenericWidgetAdapter {
+public class SolarAltitudeWidgetAdapter extends GenericWidgetAdapter {
 
-    public SecurityWidgetAdapter(Module module) {
+    public SolarAltitudeWidgetAdapter(Module module) {
         super(module);
     }
 
@@ -51,7 +50,7 @@ public class SecurityWidgetAdapter extends GenericWidgetAdapter {
     public View getView(LayoutInflater inflater) {
         View v = _module.View;
         if (v == null) {
-            v = inflater.inflate(R.layout.widget_item_security, null);
+            v = inflater.inflate(R.layout.widget_item_earthtools, null);
             _module.View = v;
             v.setTag(_module);
         } else {
@@ -68,44 +67,40 @@ public class SecurityWidgetAdapter extends GenericWidgetAdapter {
         TextView title = (TextView) _module.View.findViewById(R.id.titleText);
         TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
         TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
-        ToggleButton armbutton = (ToggleButton) _module.View.findViewById(R.id.armDisarm);
 
         title.setText(_module.getDisplayName());
         subtitle.setText(_module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
-        String updateTimestamp;
-        ModuleParameter statusLevel = _module.getParameter("Status.Level");
-        if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals("")) {
-            ///updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(statusLevel.UpdateTime);
-            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(statusLevel.UpdateTime) + " " +
-                    DateFormat.getTimeFormat(_module.View.getContext()).format(statusLevel.UpdateTime);
+        ModuleParameter sunriseParam = _module.getParameter("jkUtils.SolarAltitude.Morning.Civil.Start");
+        String sunrise = "";
+        if (sunriseParam != null) sunrise = sunriseParam.Value;
+        _updatePropertyBox(_module.View, R.id.propSunrise, "Sunrise", sunrise);
+        //
+        ModuleParameter sunsetParam = _module.getParameter("jkUtils.SolarAltitude.Evening.Civil.End");
+        String sunset = "";
+        if (sunsetParam != null) sunset = sunsetParam.Value;
+        _updatePropertyBox(_module.View, R.id.propSunset, "Sunset", sunset);
+        //
+        ModuleParameter latParam = _module.getParameter("ConfigureOptions.jkUtils.SolarAltitude.Latitude");
+        String latitude = "";
+        if (latParam != null) latitude = Module.getFormattedNumber(latParam.Value);
+        _updatePropertyBox(_module.View, R.id.propLatitude, "Lat.", latitude);
+        //
+        ModuleParameter longParam = _module.getParameter("ConfigureOptions.jkUtils.SolarAltitude.Longitude");
+        String longitude = "";
+        if (longParam != null) longitude = Module.getFormattedNumber(longParam.Value);
+        _updatePropertyBox(_module.View, R.id.propLongitude, "Long.", longitude);
+        //
+        if (sunriseParam != null) {
+            //new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
+            String updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(sunriseParam.UpdateTime) + " " +
+                    DateFormat.getTimeFormat(_module.View.getContext()).format(sunriseParam.UpdateTime);
 
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
-            if (statusLevel.Value.equals("1")) {
-                armbutton.setChecked(true);
-            } else {
-                armbutton.setChecked(false);
-            }
         }
-
-        String armedstat = "";
-        ModuleParameter armedStatus = _module.getParameter("HomeGenie.SecurityArmed");
-        if (armedStatus != null && armedStatus.Value != null && !armedStatus.Value.equals("")) {
-            armedstat = (armedStatus.Value.equals("1") ? "Armed" : (statusLevel.Value.equals("1") ? "Arming" : "Disarmed"));
-        }
-        _updatePropertyBox(_module.View, R.id.propArmedStatus, "Status", armedstat);
-
-        armbutton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean armed) {
-                _module.setParameter("Status.Level", armed ? "1" : "0");
-                //refreshView();
-                _module.control("Control." + (armed ? "On" : "Off"), null);
-            }
-        });
-
+        //
         final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
         if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
@@ -118,7 +113,7 @@ public class SecurityWidgetAdapter extends GenericWidgetAdapter {
                     image.setTag("CACHED");
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_module), image);
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + "/hg/html/pages/control/widgets/jkUtils/SolarAltitude/images/status/Evening.GoldenHour.Start.png", image);
         }
 
     }
