@@ -100,12 +100,13 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
             }
         });
 
-        if (_module.DeviceType.equals("Shutter")) {
-            onButton.setText("Open");
-            offButton.setText("Close");
+        if (_module != null) {
+            if (_module.DeviceType.equals("Shutter")) {
+                onButton.setText("Open");
+                offButton.setText("Close");
+            }
+            refreshView();
         }
-
-        refreshView();
 
         return _view;
     }

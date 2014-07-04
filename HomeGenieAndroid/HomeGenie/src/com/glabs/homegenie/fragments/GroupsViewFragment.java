@@ -172,35 +172,37 @@ public class GroupsViewFragment extends Fragment {
         Menu menu = rootactivity.getActionMenu();
         if (menu != null) {
             MenuItem automation = menu.findItem(R.id.menu_automation);
-            automation.setEnabled(false);
-            Menu submenu = automation.getSubMenu();
-            if (submenu == null) return;
-            //
-            submenu.removeGroup(Menu.NONE);
-            if (mGroupPrograms.size() > 0) {
-                for (Module program : mGroupPrograms) {
-                    MenuItem prg = submenu.add(Menu.NONE, Menu.NONE, Menu.NONE, program.getDisplayName());
-                    prg.setIcon(R.drawable.ic_action_flash_on);
-                    MenuCompat.setShowAsAction(prg, SHOW_AS_ACTION_IF_ROOM | SHOW_AS_ACTION_WITH_TEXT);
-                    final String paddress = program.Address;
-                    String groupname = "";
-                    try {
-                        groupname = Uri.encode(mAdapter.getGroup(mCurrentGroup).Name, "UTF-8");
-                    } catch (Exception e) {
-                    }
-                    final String gname = groupname;
-                    prg.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            String apicall = "HomeAutomation.HomeGenie/Automation/Programs.Run/" +
-                                    paddress + "/" +
-                                    gname + "/" + new Date().getTime();
-                            Control.callServiceApi(apicall, null);
-                            return true;
+            if (automation != null) {
+                automation.setEnabled(false);
+                Menu submenu = automation.getSubMenu();
+                if (submenu == null) return;
+                //
+                submenu.removeGroup(Menu.NONE);
+                if (mGroupPrograms.size() > 0) {
+                    for (Module program : mGroupPrograms) {
+                        MenuItem prg = submenu.add(Menu.NONE, Menu.NONE, Menu.NONE, program.getDisplayName());
+                        prg.setIcon(R.drawable.ic_action_flash_on);
+                        MenuCompat.setShowAsAction(prg, SHOW_AS_ACTION_IF_ROOM | SHOW_AS_ACTION_WITH_TEXT);
+                        final String paddress = program.Address;
+                        String groupname = "";
+                        try {
+                            groupname = Uri.encode(mAdapter.getGroup(mCurrentGroup).Name, "UTF-8");
+                        } catch (Exception e) {
                         }
-                    });
+                        final String gname = groupname;
+                        prg.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                String apicall = "HomeAutomation.HomeGenie/Automation/Programs.Run/" +
+                                        paddress + "/" +
+                                        gname + "/" + new Date().getTime();
+                                Control.callServiceApi(apicall, null);
+                                return true;
+                            }
+                        });
+                    }
+                    automation.setEnabled(true);
                 }
-                automation.setEnabled(true);
             }
             //
 //            MenuItem recordMacro = submenu.add(1, Menu.NONE, Menu.NONE, "Record macro");
