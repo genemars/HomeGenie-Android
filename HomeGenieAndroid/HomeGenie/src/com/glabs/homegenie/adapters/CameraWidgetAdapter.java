@@ -66,29 +66,32 @@ public class CameraWidgetAdapter extends GenericWidgetAdapter {
 
         TextView title = (TextView) _module.View.findViewById(R.id.titleText);
         TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
+        TextView infoText = (TextView) _module.View.findViewById(R.id.infoText);
 
         title.setText(_module.getDisplayName());
         subtitle.setText(_module.getDisplayAddress());
-        infotext.setVisibility(View.GONE);
+        infoText.setVisibility(View.GONE);
         //
         // get Image.URL property
-        ModuleParameter imageurl = _module.getParameter("Image.URL");
+        String imagePath = "/api/" + _module.Domain + "/" + _module.Address + "/Camera.GetPicture/";
+        ModuleParameter imageUrl = _module.getParameter("Image.URL");
+        if (imageUrl != null && !imageUrl.Value.equals(""))
+        {
+            imagePath = imageUrl.Value;
+        }
         //
         final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
-        if (imageurl != null)// && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable))
-        {
-            AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, false, new AsyncImageDownloadTask.ImageDownloadListener() {
-                @Override
-                public void imageDownloadFailed(String imageUrl) {
-                }
+        AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, false, new AsyncImageDownloadTask.ImageDownloadListener() {
+            @Override
+            public void imageDownloadFailed(String imageUrl) {
+            }
 
-                @Override
-                public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
-                }
-            });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + imageurl.Value, image);
-        }
+            @Override
+            public void imageDownloaded(String imageUrl, Bitmap downloadedImage) {
+            }
+        });
+        asyncDownloadTask.setCacheEnabled(false);
+        asyncDownloadTask.download(Control.getHgBaseHttpAddress() + imagePath + System.currentTimeMillis(), image);
 
     }
 

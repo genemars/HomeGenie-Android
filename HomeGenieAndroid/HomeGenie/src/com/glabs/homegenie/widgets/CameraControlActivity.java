@@ -40,7 +40,7 @@ import com.glabs.homegenie.util.AsyncImageDownloadTask;
 public class CameraControlActivity extends ModuleControlActivity {
 
     private boolean _ispaused = true;
-    private ModuleParameter _imageurl;
+    private String _imagepath;
     private ImageView _image;
 
     @Override
@@ -49,13 +49,17 @@ public class CameraControlActivity extends ModuleControlActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.widget_control_camera);
-
+        //
         TextView title = (TextView) findViewById(R.id.title);
         title.setText(_module.getDisplayName());
-
         //
         // get Image.URL property
-        _imageurl = _module.getParameter("Image.URL");
+        _imagepath = "/api/" + _module.Domain + "/" + _module.Address + "/Camera.GetPicture/";
+        ModuleParameter imageUrl = _module.getParameter("Image.URL");
+        if (imageUrl != null && !imageUrl.Value.equals(""))
+        {
+            _imagepath = imageUrl.Value;
+        }
         _image = (ImageView) findViewById(R.id.image);
     }
 
@@ -72,8 +76,8 @@ public class CameraControlActivity extends ModuleControlActivity {
         super.onResume();
         _ispaused = false;
         //
-        if (_image != null && _imageurl != null) {
-            refreshImage(Control.getHgBaseHttpAddress() + _imageurl.Value, _image);
+        if (_image != null) {
+            refreshImage(Control.getHgBaseHttpAddress() + _imagepath, _image);
         }
     }
 
@@ -110,6 +114,7 @@ public class CameraControlActivity extends ModuleControlActivity {
                 h.postDelayed(refresh, 150);
             }
         });
-        asyncDownloadTask.download(url, image);
+        asyncDownloadTask.setCacheEnabled(false);
+        asyncDownloadTask.download(url + System.currentTimeMillis(), image);
     }
 }

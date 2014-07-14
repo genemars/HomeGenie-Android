@@ -226,7 +226,7 @@ public class GenericWidgetAdapter {
         //
         if (widget != null && widget.Value.equals("homegenie/generic/colorlight")) {
             fmWidget = new ColorLightDialogFragment();
-        } else if (widget != null && widget.Value.equals("zwave/fibaro/rgbw")) {
+        } else if (widget != null && widget.Value.equals("DaniMail/fibaro/rgbw")) {
             fmWidget = new ColorLightRGBDialogFragment();
         } else if (devtype.equals(Module.DeviceTypes.Dimmer) ||
                 devtype.equals(Module.DeviceTypes.Siren) ||

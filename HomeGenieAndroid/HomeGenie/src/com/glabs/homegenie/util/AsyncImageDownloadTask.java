@@ -69,6 +69,7 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
     protected final WeakReference<ImageView> imageViewReference;
     protected WeakReference<Bitmap> imageBitmap = new WeakReference<Bitmap>(null);
     private static HashMap<String, Bitmap> imageCache = new HashMap<String, Bitmap>();
+    private boolean cacheEnabled = true;
     private ImageDownloadListener listener;
     private boolean animate = false;
 
@@ -86,18 +87,28 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         this.listener = listener;
     }
 
+    public boolean getCacheEnabled()
+    {
+        return cacheEnabled;
+    }
+    public void setCacheEnabled(boolean enabled)
+    {
+        cacheEnabled = enabled;
+    }
+
     /**
      * @param url
      * @param imageView
      */
     public void download(String url, ImageView imageView) {
-        if (imageCache.containsKey(url)) {
+        if (cacheEnabled && imageCache.containsKey(url)) {
             Bitmap bitmap = imageCache.get(url);
             setImage(imageView, bitmap);
             if (listener != null)
                 listener.imageDownloaded(url, bitmap);  //call back
         } else if (cancelPotentialDownload(url, imageView)) {
             AsyncImageDownloadTask task = new AsyncImageDownloadTask(imageView, animate, listener);
+            task.setCacheEnabled(cacheEnabled);
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
             imageView.setImageDrawable(downloadedDrawable);
             task.execute(url);
@@ -122,8 +133,23 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
             AsyncImageDownloadTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
             // Change bitmap only if this process is still associated with it
             if (this == bitmapDownloaderTask) {
-                imageCache.put(url, bitmap);
+                // get old drawable
+                Drawable drawable = imageView.getDrawable();
+                // set new drawable
                 setImage(imageView, bitmap);
+                //
+                if (cacheEnabled)
+                {
+                    imageCache.put(url, bitmap);
+                }
+                else
+                {
+                    if (drawable instanceof BitmapDrawable) {
+                        BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                        Bitmap oldBitmap = bitmapDrawable.getBitmap();
+                        if (oldBitmap != null) oldBitmap.recycle();
+                    }
+                }
             }
         }
     }

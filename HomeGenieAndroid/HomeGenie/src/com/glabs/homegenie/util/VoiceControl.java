@@ -31,6 +31,7 @@ import android.os.Message;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.glabs.homegenie.R;
@@ -394,9 +395,11 @@ public class VoiceControl implements RecognitionListener {
             for (Group g : Control.getGroups()) {
                 if (g.Name.toLowerCase().equals(group.toLowerCase())) {
                     for (Module m : g.Modules) {
-                        for (Module im : Control.getModules()) {
-                            if (m.Domain.equals(im.Domain) && m.Address.equals(im.Address)) {
-                                modules.add(im);
+                        if (m != null) {
+                            for (Module im : Control.getModules()) {
+                                if (m.Domain.equals(im.Domain) && m.Address.equals(im.Address)) {
+                                    modules.add(im);
+                                }
                             }
                         }
                     }
