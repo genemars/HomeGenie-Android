@@ -160,7 +160,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        //No call for super(). Bug on API Level > 11.
+        //outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -298,7 +299,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         fragmentTransaction.add(fmWidget, "SETTINGS");
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        fragmentTransaction.commit();
+        fragmentTransaction.commitAllowingStateLoss();
+        //fragmentTransaction.commit();
     }
 
     public void openMacroRecordMenu() {

@@ -50,17 +50,20 @@ public class CameraControlActivity extends ModuleControlActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.widget_control_camera);
         //
-        TextView title = (TextView) findViewById(R.id.title);
-        title.setText(_module.getDisplayName());
-        //
-        // get Image.URL property
-        _imagepath = "/api/" + _module.Domain + "/" + _module.Address + "/Camera.GetPicture/";
-        ModuleParameter imageUrl = _module.getParameter("Image.URL");
-        if (imageUrl != null && !imageUrl.Value.equals(""))
-        {
-            _imagepath = imageUrl.Value;
+        try {
+            TextView title = (TextView) findViewById(R.id.title);
+            title.setText(_module.getDisplayName());
+            //
+            // get Image.URL property
+            _imagepath = "/api/" + _module.Domain + "/" + _module.Address + "/Camera.GetPicture/";
+            ModuleParameter imageUrl = _module.getParameter("Image.URL");
+            if (imageUrl != null && !imageUrl.Value.equals("")) {
+                _imagepath = imageUrl.Value;
+            }
+            _image = (ImageView) findViewById(R.id.image);
+        } catch (Exception e) {
+            // TODO: report exception
         }
-        _image = (ImageView) findViewById(R.id.image);
     }
 
     @Override
