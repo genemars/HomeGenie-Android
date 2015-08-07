@@ -28,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.glabs.homegenie.R;
@@ -42,10 +43,13 @@ public class SettingsFragment extends DialogFragment {
 
     private final String PREFS_NAME = "HomeGenieService";
     private EditText hg_address, hg_user, hg_pass;
+    private CheckBox hg_ssl, hg_accept_all;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        boolean hg_ssl_checked, hg_accept_all_checked;
+
         /** Inflating the layout for this fragment **/
         getDialog().getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
         getDialog().setTitle("Settings");
@@ -55,6 +59,8 @@ public class SettingsFragment extends DialogFragment {
         hg_address = (EditText) v.findViewById(R.id.hg_service_address);
         hg_user = (EditText) v.findViewById(R.id.hg_service_user);
         hg_pass = (EditText) v.findViewById(R.id.hg_service_pass);
+        hg_ssl = (CheckBox) v.findViewById(R.id.hg_ssl);
+        hg_accept_all = (CheckBox) v.findViewById(R.id.hg_accept_all);
 
 /*        Button connect = (Button)v.findViewById(R.id.btn_connect);
         connect.setOnClickListener(new View.OnClickListener() {
@@ -64,12 +70,21 @@ public class SettingsFragment extends DialogFragment {
             }
         });*/
 
-
         // Restore preferences
         SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
         hg_address.setText(settings.getString("serviceAddress", "127.0.0.1"));
         hg_user.setText(settings.getString("serviceUsername", "admin"));
         hg_pass.setText(settings.getString("servicePassword", ""));
+        hg_ssl_checked = settings.getBoolean("serviceSSL", false);
+        if (hg_ssl_checked)
+            hg_ssl.setChecked(true);
+        else
+            hg_ssl.setChecked(false);
+        hg_accept_all_checked = settings.getBoolean("serviceAcceptAll", false);
+        if (hg_accept_all_checked)
+            hg_accept_all.setChecked(true);
+        else
+            hg_accept_all.setChecked(false);
 
         return v;
     }
@@ -96,6 +111,8 @@ public class SettingsFragment extends DialogFragment {
         editor.putString("serviceAddress", hg_address.getText().toString().trim());
         editor.putString("serviceUsername", hg_user.getText().toString().trim());
         editor.putString("servicePassword", hg_pass.getText().toString().trim());
+        editor.putBoolean("serviceSSL", hg_ssl.isChecked());
+        editor.putBoolean("serviceAcceptAll", hg_accept_all.isChecked());
 
         // Commit the edits!
         editor.commit();
@@ -104,7 +121,9 @@ public class SettingsFragment extends DialogFragment {
         Control.setServer(
                 settings.getString("serviceAddress", ""),
                 settings.getString("serviceUsername", ""),
-                settings.getString("servicePassword", "")
+                settings.getString("servicePassword", ""),
+                settings.getBoolean("serviceSSL", false),
+                settings.getBoolean("serviceAcceptAll", false)
         );
 
         StartActivity sa = (StartActivity) getActivity();

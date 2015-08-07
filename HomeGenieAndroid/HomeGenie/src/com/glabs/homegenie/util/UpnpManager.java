@@ -165,7 +165,9 @@ public class UpnpManager {
                     Control.setServer(
                             settings.getString("serviceAddress", "127.0.0.1"),
                             settings.getString("serviceUsername", "admin"),
-                            settings.getString("servicePassword", "")
+                            settings.getString("servicePassword", ""),
+                            settings.getBoolean("serviceSSL", false),
+                            settings.getBoolean("serviceAcceptAll", false)
                     );
 
                     if (settings.getString("serviceAddress", "").equals("") && device.getDetails().getModelDetails().getModelName().equals("HomeGenie")) {

@@ -66,15 +66,37 @@
         android:layout_width="fill_parent"
         android:text="(leave blank if security is disabled)" />
 
-<!--
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:layout_gravity="center"
-        android:id="@+id/btn_connect"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="connect" />
--->
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Use SSL"
+            android:id="@+id/hg_ssl"
+            android:layout_margin="5dp"
+            android:checked="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accept all certs"
+            android:id="@+id/hg_accept_all"
+            android:layout_margin="5dp"
+            android:checked="false" />
+    </LinearLayout>
+
+    <!--
+
+        <Button
+            android:layout_gravity="center"
+            android:id="@+id/btn_connect"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="connect" />
+    -->
 
 </LinearLayout>
