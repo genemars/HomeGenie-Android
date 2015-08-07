@@ -39,24 +39,13 @@ import com.glabs.homegenie.StartActivity;
 import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Group;
 import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.client.httprequest.HttpRequest;
+import com.glabs.homegenie.client.httprequest.HttpRequest.HttpRequestException;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -73,19 +62,16 @@ public class VoiceControl implements RecognitionListener {
     private String _currentInput = "";
     private LingoData _lingodata;
 
-    private ResponseHandler<String> _response_handler = new ResponseHandler<String>() {
-        public String handleResponse(final HttpResponse response)
-        throws HttpResponseException, IOException {
-            StatusLine statusLine = response.getStatusLine();
-            if (statusLine.getStatusCode() >= 300) {
-                throw new HttpResponseException(statusLine.getStatusCode(),
-                        statusLine.getReasonPhrase());
+    private static String handleResponse(HttpRequest request) {
+        if (request.code() < 200 || request.code() >= 300) {
+            try {
+                throw new HttpResponseException(request.code(), request.message());
+            } catch (HttpResponseException e) {
+                e.printStackTrace();
             }
-
-            HttpEntity entity = response.getEntity();
-            return entity == null ? null : EntityUtils.toString(entity, "UTF-8");
         }
-    };
+        return request.body();
+    }
 
     class RetrieveLingoDataTask extends AsyncTask<Void, Void, String> {
 
@@ -93,18 +79,15 @@ public class VoiceControl implements RecognitionListener {
 
         protected String doInBackground(Void... noargs) {
             try {
-                HttpGet getRequest = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "hg/html/locales/" + Locale.getDefault().getLanguage() + ".lingo.json");
-                DefaultHttpClient client = new DefaultHttpClient();
-                String data = client.execute(getRequest, _response_handler);
+                HttpRequest request = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "ht/html/locales/" + Locale.getDefault().getLanguage() + ".lingo.json");
+                String data = handleResponse(request);
                 if (data.trim().equals(""))
                 {
-                    // fallback to english lingo definitions
-                    getRequest = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "hg/html/locales/en.lingo.json");
-                    client = new DefaultHttpClient();
-                    data = client.execute(getRequest, _response_handler);
+                    request = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "hg/html/locales/en.lingo.json");
+                    data = handleResponse(request);
                 }
                 return data;
-            } catch (Exception e) {
+            } catch (HttpRequestException e) {
                 this.exception = e;
                 return "";
             }
