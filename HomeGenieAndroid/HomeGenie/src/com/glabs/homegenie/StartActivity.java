@@ -156,6 +156,9 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             _upnpmanager.unbind();
             _upnpmanager = null;
         }
+
+        // Disconnect from HomeGenie service
+        homegenieDisconnect();
     }
 
     @Override
