@@ -51,6 +51,8 @@ import com.glabs.homegenie.widgets.ModuleDialogFragment;
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.TitlePageIndicator;
 
+import org.teleal.cling.model.types.DeviceType;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
@@ -244,7 +246,7 @@ public class GroupsViewFragment extends Fragment {
             ModuleParameter widgetParam = m.getParameter("Widget.DisplayModule");
             String widget = "";
             if (widgetParam != null) widget = widgetParam.Value;
-            if (widget.equals("homegenie/generic/program")) {
+            if ((widget.equals("") && m.DeviceType.equals("Program")) || widget.equals("homegenie/generic/program")) {
                 mGroupPrograms.add(m);
             } else {
                 controlModules.add(m);

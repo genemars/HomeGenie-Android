@@ -97,6 +97,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         @Override
         public void run() {
             mGroupsViewFragment.UpdateCurrentGroupModules();
+            mGroupsViewFragment.UpdateCurrentGroupMenu();
             Fragment widgetPopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
             if (widgetPopup != null && widgetPopup instanceof ModuleDialogFragment) {
                 ((ModuleDialogFragment) widgetPopup).refreshView();
@@ -144,10 +145,12 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         if (!_isPaused) {
             homegenieConnect();
         } else {
+            loaderShow();
             Control.resume(new Control.GetGroupModulesCallback() {
                 @Override
                 public void groupModulesUpdated(ArrayList<Module> modules) {
                     updateView();
+                    loaderHide();
                 }
             });
         }
@@ -468,10 +471,14 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                     }
                     displayName = module.getDisplayName() + " (" + module.getDisplayAddress() + ")";
                     if (mGroupsViewFragment != null) {
-                        mGroupsViewFragment.RefreshView();
-                        Fragment widgetPopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
-                        if (widgetPopup != null && widgetPopup instanceof ModuleDialogFragment) {
-                            ((ModuleDialogFragment) widgetPopup).refreshView();
+                        try {
+                            mGroupsViewFragment.RefreshView();
+                            Fragment widgetPopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
+                            if (widgetPopup != null && widgetPopup instanceof ModuleDialogFragment) {
+                                ((ModuleDialogFragment) widgetPopup).refreshView();
+                            }
+                        } catch (Exception e) {
+                            //Log.d("onSseEvent", e.getMessage());
                         }
                     }
                 }

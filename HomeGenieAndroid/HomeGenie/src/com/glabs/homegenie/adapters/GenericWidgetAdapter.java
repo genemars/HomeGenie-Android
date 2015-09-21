@@ -437,6 +437,8 @@ public class GenericWidgetAdapter {
         if (value == null || value.equals("")) {
             propBox.setVisibility(View.GONE);
         } else {
+            if (propBox.getVisibility() == View.GONE)
+                propBox.setVisibility(View.VISIBLE);
             TextView propLabel = (TextView) propBox.findViewById(R.id.propLabel);
             propLabel.setText(label);
             TextView propValue = (TextView) propBox.findViewById(R.id.propValue);
