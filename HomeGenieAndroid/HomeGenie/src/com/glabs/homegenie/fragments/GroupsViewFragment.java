@@ -218,6 +218,16 @@ public class GroupsViewFragment extends Fragment {
         }
     }
 
+    public void RefreshView() {
+        GroupFragment f = mAdapter.getItem(mCurrentGroup);
+        View v = f.getView();
+        ListView lv = (ListView) v.findViewById(R.id.listView);
+        ModulesAdapter adapter = (ModulesAdapter)lv.getAdapter();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
     public void UpdateCurrentGroupModules() {
         ArrayList<Module> modules = null;
         try

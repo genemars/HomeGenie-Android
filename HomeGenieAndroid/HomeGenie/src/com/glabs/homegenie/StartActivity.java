@@ -29,11 +29,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -84,19 +87,19 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     private ImageView mEventIcon;
 
     private Handler mHandler;
-    private Menu _actionmenu;
-    private boolean _ispaused = false;
-    public boolean _islogovisible = true;
-    private VoiceControl _voicecontrol;
-    private UpnpManager _upnpmanager;
+    private Menu _actionMenu;
+    private boolean _isPaused = false;
+    public boolean _isLogoVisible = true;
+    private VoiceControl _voiceControl;
+    private UpnpManager _upnpManager;
 
     private Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
             mGroupsViewFragment.UpdateCurrentGroupModules();
-            Fragment widgetpopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
-            if (widgetpopup != null && widgetpopup instanceof ModuleDialogFragment) {
-                ((ModuleDialogFragment) widgetpopup).refreshView();
+            Fragment widgetPopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
+            if (widgetPopup != null && widgetPopup instanceof ModuleDialogFragment) {
+                ((ModuleDialogFragment) widgetPopup).refreshView();
             }
         }
     };
@@ -131,34 +134,42 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     @Override
     public void onResume() {
         super.onResume();
-        _ispaused = false;
 
-        if (_upnpmanager == null) {
-            _upnpmanager = new UpnpManager(this);
-            _upnpmanager.bind();
+        if (_upnpManager == null) {
+            _upnpManager = new UpnpManager(this);
+            _upnpManager.bind();
         }
 
         // Connect to HomeGenie service
-        if (Control.getGroups() == null && Control.getModules() == null) {
+        if (!_isPaused) {
             homegenieConnect();
+        } else {
+            Control.resume(new Control.GetGroupModulesCallback() {
+                @Override
+                public void groupModulesUpdated(ArrayList<Module> modules) {
+                    updateView();
+                }
+            });
         }
+
+        _isPaused = false;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        _ispaused = true;
+        _isPaused = true;
 
         if (mHandler != null) {
             mHandler.removeCallbacksAndMessages(null);
         }
-        if (_upnpmanager != null) {
-            _upnpmanager.unbind();
-            _upnpmanager = null;
+        if (_upnpManager != null) {
+            _upnpManager.unbind();
+            _upnpManager = null;
         }
 
         // Disconnect from HomeGenie service
-        homegenieDisconnect();
+        Control.pause();
     }
 
     @Override
@@ -210,12 +221,12 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                         mGroupsViewFragment.setGroups(Control.getGroups());
                         hideLogo();
                         //
-                        if (_voicecontrol == null) {
-                            _voicecontrol = new VoiceControl(hgcontext);
+                        if (_voiceControl == null) {
+                            _voiceControl = new VoiceControl(hgcontext);
                         }
                     } else {
                         FragmentManager fm = getSupportFragmentManager();
-                        if (!_ispaused) {
+                        if (!_isPaused) {
                             if (fm.findFragmentByTag("SETTINGS") == null || !fm.findFragmentByTag("SETTINGS").isVisible()) {
                                 if (fm.findFragmentByTag("ERROR") == null || !fm.findFragmentByTag("ERROR").isVisible()) {
                                     ErrorDialogFragment fmWidget = new ErrorDialogFragment();
@@ -227,7 +238,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                             }
                         }
                     }
-                    updateGroupModules();
+                    updateView();
                     loaderHide();
                 }
             }, this);
@@ -239,7 +250,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     }
 
     public void hideLogo() {
-        _islogovisible = false;
+        _isLogoVisible = false;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -251,14 +262,14 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                 AnimationSet animation = new AnimationSet(false); //change to false
                 animation.addAnimation(fadeOut);
                 animation.setFillAfter(true);
-                RelativeLayout ivlogo = (RelativeLayout) findViewById(R.id.logo);
-                ivlogo.startAnimation(animation);
+                RelativeLayout ivLogo = (RelativeLayout) findViewById(R.id.logo);
+                ivLogo.startAnimation(animation);
             }
         });
     }
 
     public void showLogo() {
-        _islogovisible = true;
+        _isLogoVisible = true;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -270,8 +281,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                 AnimationSet animation = new AnimationSet(false); //change to false
                 animation.addAnimation(fadeIn);
                 animation.setFillAfter(true);
-                RelativeLayout ivlogo = (RelativeLayout) findViewById(R.id.logo);
-                ivlogo.startAnimation(animation);
+                RelativeLayout ivLogo = (RelativeLayout) findViewById(R.id.logo);
+                ivLogo.startAnimation(animation);
             }
         });
     }
@@ -317,15 +328,14 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         fragmentTransaction.commit();
     }
 
-    public void updateGroupModules() {
-        if (Control.getGroups() != null && Control.getModules() != null) {
-            if (mHandler != null) {
-                mHandler.removeCallbacksAndMessages(null);
-            }
-            mHandler = new Handler();
-            //startRepeatingTask();
-            mHandler.postDelayed(mStatusChecker, 300);
+    public void updateView() {
+        Log.v("StartActivity", "updateView()");
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
         }
+        mHandler = new Handler(Looper.getMainLooper());
+        //startRepeatingTask();
+        mHandler.postDelayed(mStatusChecker, 300);
     }
 
     public void showOptionsMenu() {
@@ -334,8 +344,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             public void run() {
                 try {
                     openOptionsMenu();
-                    if (_actionmenu != null) {
-                        _actionmenu.performIdentifierAction(R.id.menu_system, 0);
+                    if (_actionMenu != null) {
+                        _actionMenu.performIdentifierAction(R.id.menu_system, 0);
                     }
                 } catch (Exception e) {
                     showSettings();
@@ -347,17 +357,17 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (_actionmenu == null) {
+        if (_actionMenu == null) {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.menu_group, menu);
-            _actionmenu = menu;
+            _actionMenu = menu;
             //
-            _actionmenu.findItem(R.id.action_recognition).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            _actionMenu.findItem(R.id.action_recognition).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-                    if (_voicecontrol != null)
+                    if (_voiceControl != null)
                     {
-                        _voicecontrol.startListen();
+                        _voiceControl.startListen();
                     }
                     else
                     {
@@ -419,7 +429,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
 
     public Menu getActionMenu() {
-        return _actionmenu;
+        return _actionMenu;
     }
 
     @Override
@@ -429,22 +439,19 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
     @Override
     public void onSseConnect() {
-
+        Log.v("StartActivity", "onSseConnect()");
     }
 
     @Override
-    public void onSseEvent(final Event event) {
+    public void onSseEvent(final Module module, final Event event) {
 
         if (event.Property.equals("Program.Status")) return;
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                updateGroupModules();
-                //
-                String displayName = event.Domain + "." + event.Source;
-                Module module = Control.getModule(event.Domain, event.Source);
                 boolean filtered = isFilteredEvent(event);
+                String displayName = event.Domain + "." + event.Source;
                 if (module != null && !filtered) {
                     final String imageUrl = Control.getHgBaseHttpAddress() + GenericWidgetAdapter.getModuleIcon(module);
                     if (mEventIcon.getTag() == null || !mEventIcon.getTag().equals(imageUrl) && !(mEventIcon.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
@@ -452,7 +459,6 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                             @Override
                             public void imageDownloadFailed(String url) {
                             }
-
                             @Override
                             public void imageDownloaded(String url, Bitmap downloadedImage) {
                                 mEventIcon.setTag(imageUrl);
@@ -461,6 +467,13 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                         asyncDownloadTask.download(imageUrl, mEventIcon);
                     }
                     displayName = module.getDisplayName() + " (" + module.getDisplayAddress() + ")";
+                    if (mGroupsViewFragment != null) {
+                        mGroupsViewFragment.RefreshView();
+                        Fragment widgetPopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
+                        if (widgetPopup != null && widgetPopup instanceof ModuleDialogFragment) {
+                            ((ModuleDialogFragment) widgetPopup).refreshView();
+                        }
+                    }
                 }
                 //
                 if (!filtered)
@@ -475,7 +488,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
     @Override
     public void onSseError(String error) {
-
+        Log.v("StartActivity", "onSseError: " + error);
+        // TODO: should try reconnect?
     }
 
     private boolean isFilteredEvent(Event event) {

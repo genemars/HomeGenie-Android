@@ -79,7 +79,7 @@ public class VoiceControl implements RecognitionListener {
 
         protected String doInBackground(Void... noargs) {
             try {
-                HttpRequest request = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "ht/html/locales/" + Locale.getDefault().getLanguage() + ".lingo.json");
+                HttpRequest request = Control.getHttpGetRequest(Control.getHgBaseHttpAddress() + "hg/html/locales/" + Locale.getDefault().getLanguage() + ".lingo.json");
                 String data = handleResponse(request);
                 if (data.trim().equals(""))
                 {
