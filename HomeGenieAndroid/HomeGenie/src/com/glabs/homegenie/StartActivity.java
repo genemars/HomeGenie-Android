@@ -156,6 +156,9 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             _upnpmanager.unbind();
             _upnpmanager = null;
         }
+
+        // Disconnect from HomeGenie service
+        homegenieDisconnect();
     }
 
     @Override
@@ -196,7 +199,9 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             Control.setServer(
                     settings.getString("serviceAddress", "127.0.0.1"),
                     settings.getString("serviceUsername", "admin"),
-                    settings.getString("servicePassword", "")
+                    settings.getString("servicePassword", ""),
+                    settings.getBoolean("serviceSSL", false),
+                    settings.getBoolean("serviceAcceptAll", false)
             );
             Control.connect(new Control.UpdateGroupsAndModulesCallback() {
                 @Override

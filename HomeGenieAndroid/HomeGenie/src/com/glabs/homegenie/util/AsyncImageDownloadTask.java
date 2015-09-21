@@ -38,18 +38,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.widget.ImageView;
 
 import com.glabs.homegenie.client.Control;
+import com.glabs.homegenie.client.httprequest.HttpRequest;
+import com.glabs.homegenie.client.httprequest.HttpRequest.HttpRequestException;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
@@ -199,39 +196,34 @@ public class AsyncImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
      * @return
      */
     private Bitmap downloadBitmap(String url) {
-        final AndroidHttpClient client = AndroidHttpClient.newInstance("Android");
-        final HttpGet getRequest = Control.getHttpGetRequest(url);
         try {
-            HttpResponse response = client.execute(getRequest);
-            final int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode == HttpStatus.SC_OK) {
-                final HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    InputStream inputStream = null;
-                    try {
-                        inputStream = entity.getContent();
-                        final Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            HttpRequest request = Control.getHttpGetRequest(url);
+            int statusCode = request.code();
+            if (statusCode >= 200 && statusCode < 300) {
+                ByteArrayInputStream inputStream = null;
+                ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
+                try {
+                    request.receive(byteOutPutStream);
+                    byte[] b = byteOutPutStream.toByteArray();
+                    inputStream = new ByteArrayInputStream(b);
+                    final Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
-                        if (listener != null)
-                            listener.imageDownloaded(url, bitmap);  //call back
+                    if (listener != null)
+                        listener.imageDownloaded(url, bitmap);  //call back
 
-                        return bitmap;
-                    } finally {
-                        if (inputStream != null) {
+                    return bitmap;
+                } finally {
+                    if (inputStream != null) {
+                        try {
                             inputStream.close();
+                        } catch(Exception e){
+                            e.printStackTrace();
                         }
-                        entity.consumeContent();
                     }
                 }
             }
-        } catch (Exception e) {
-            // Could provide a more explicit error message for IOException or
-            // IllegalStateException
-            getRequest.abort();
-        } finally {
-            if (client != null) {
-                client.close();
-            }
+        } catch(HttpRequestException e) {
+            e.printStackTrace();
         }
 
         if (listener != null)
