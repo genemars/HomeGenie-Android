@@ -140,9 +140,9 @@ public class GroupsViewFragment extends Fragment {
     }
 
     public void UpdateJumpToGroupMenu(ArrayList<Group> groups) {
-        StartActivity rootactivity = (StartActivity) getActivity();
-        if (rootactivity != null) {
-            Menu menu = rootactivity.getActionMenu();
+        StartActivity rootActivity = (StartActivity) getActivity();
+        if (rootActivity != null) {
+            Menu menu = rootActivity.getActionMenu();
             if (menu != null) {
                 MenuItem jumpto = menu.findItem(R.id.action_jumpto);
                 Menu submenu = jumpto.getSubMenu();
@@ -170,8 +170,10 @@ public class GroupsViewFragment extends Fragment {
     }
 
     public void UpdateCurrentGroupMenu() {
-        StartActivity rootactivity = (StartActivity) getActivity();
-        Menu menu = rootactivity.getActionMenu();
+        StartActivity rootActivity = (StartActivity) getActivity();
+        if (rootActivity == null)
+            return;
+        Menu menu = rootActivity.getActionMenu();
         if (menu != null) {
             MenuItem automation = menu.findItem(R.id.menu_automation);
             if (automation != null) {
@@ -185,20 +187,20 @@ public class GroupsViewFragment extends Fragment {
                         MenuItem prg = submenu.add(Menu.NONE, Menu.NONE, Menu.NONE, program.getDisplayName());
                         prg.setIcon(R.drawable.ic_action_flash_on);
                         MenuCompat.setShowAsAction(prg, SHOW_AS_ACTION_IF_ROOM | SHOW_AS_ACTION_WITH_TEXT);
-                        final String paddress = program.Address;
-                        String groupname = "";
+                        final String address = program.Address;
+                        String groupName = "";
                         try {
-                            groupname = Uri.encode(mAdapter.getGroup(mCurrentGroup).Name, "UTF-8");
+                            groupName = Uri.encode(mAdapter.getGroup(mCurrentGroup).Name, "UTF-8");
                         } catch (Exception e) {
                         }
-                        final String gname = groupname;
+                        final String group = groupName;
                         prg.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem menuItem) {
-                                String apicall = "HomeAutomation.HomeGenie/Automation/Programs.Run/" +
-                                        paddress + "/" +
-                                        gname + "/" + new Date().getTime();
-                                Control.callServiceApi(apicall, null);
+                                String apiCall = "HomeAutomation.HomeGenie/Automation/Programs.Run/" +
+                                        address + "/" +
+                                        group + "/" + new Date().getTime();
+                                Control.callServiceApi(apiCall, null);
                                 return true;
                             }
                         });
