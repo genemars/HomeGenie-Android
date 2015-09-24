@@ -1,26 +1,35 @@
-#Android generated
-bin
-gen
-out
+#built application files
+*.apk
+*.ap_
 
-#Eclipse
-.project
-.classpath
-.settings
+# files for the dex VM
+*.dex
 
-#IntelliJ IDEA
-.idea
-*.iml
-classes
+# Java class files
+*.class
 
-#Maven
-target
-release.properties
-pom.xml.*
+# generated files
+bin/
+gen/
 
-#Command line
+# Local configuration file (sdk path, etc)
 local.properties
-build.xml
-proguard-project.txt
 
-/HomeGenieAndroid/.metadata
+# Windows thumbnail db
+Thumbs.db
+
+# OSX files
+.DS_Store
+
+# Eclipse project files
+.classpath
+.project
+
+# Android Studio
+.idea
+#.idea/workspace.xml - remove # and delete .idea if it better suit your needs.
+.gradle
+build/
+
+#NDK
+obj/

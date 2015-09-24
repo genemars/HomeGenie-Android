@@ -1,0 +1,1 @@
+include ':homegenie', ':colorpicker', ':viewpagerindicator'
