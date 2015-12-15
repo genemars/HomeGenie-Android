@@ -30,7 +30,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -74,9 +73,6 @@ import java.util.ArrayList;
  */
 public class StartActivity extends FragmentActivity implements EventSourceListener {
 
-    //variable for checking Voice Recognition support on user device
-    private static final int VR_REQUEST = 1;
-
     public final String PREFS_NAME = "HomeGenieService";
     private GroupsViewFragment mGroupsViewFragment;
     private LinearLayout mLoadingCircle;
@@ -96,7 +92,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     private Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
-            mGroupsViewFragment.UpdateCurrentGroupModules();
+            mGroupsViewFragment.UpdateCurrentGroup();
             mGroupsViewFragment.UpdateCurrentGroupMenu();
             Fragment widgetPopup = getSupportFragmentManager().findFragmentByTag("WIDGET");
             if (widgetPopup != null && widgetPopup instanceof ModuleDialogFragment) {
@@ -104,6 +100,25 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             }
         }
     };
+
+    private void resume() {
+        try {
+            Control.resume(new Control.DataUpdatedCallback() {
+                @Override
+                public void onRequestSuccess() {
+                    updateView();
+                    loaderHide();
+                }
+
+                @Override
+                public void onRequestError(Control.ApiRequestResult apiRequestResult) {
+
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
@@ -124,12 +139,16 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         mEventTime = (TextView) findViewById(R.id.eventTime);
         mEventIcon = (ImageView) findViewById(R.id.eventIcon);
 
-        mGroupsViewFragment = new GroupsViewFragment();
         FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.add(R.id.fragmentMain, mGroupsViewFragment, "Groups");
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.commit();
+        mGroupsViewFragment = (GroupsViewFragment)fm.findFragmentByTag("Groups");
+        if (mGroupsViewFragment == null) {
+            mGroupsViewFragment = new GroupsViewFragment();
+
+            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            fragmentTransaction.add(R.id.fragmentMain, mGroupsViewFragment, "Groups");
+            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            fragmentTransaction.commit();
+        }
     }
 
     @Override
@@ -141,19 +160,13 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
             _upnpManager.bind();
         }
 
+        loaderShow();
+
         // Connect to HomeGenie service
-        if (!_isPaused) {
+        if (!_isPaused)
             homegenieConnect();
-        } else {
-            loaderShow();
-            Control.resume(new Control.GetGroupModulesCallback() {
-                @Override
-                public void groupModulesUpdated(ArrayList<Module> modules) {
-                    updateView();
-                    loaderHide();
-                }
-            });
-        }
+        else
+            resume();
 
         _isPaused = false;
     }
@@ -161,6 +174,7 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
     @Override
     public void onPause() {
         super.onPause();
+
         _isPaused = true;
 
         if (mHandler != null) {
@@ -172,13 +186,11 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         }
 
         // Disconnect from HomeGenie service
-        Control.pause();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        //outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
-        super.onSaveInstanceState(outState);
+        try {
+            Control.pause();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -192,7 +204,9 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
 
     @Override
     protected void onDestroy() {
+        //getSupportFragmentManager().getFragments().clear();
         homegenieDisconnect();
+
         super.onDestroy();
     }
 
@@ -217,17 +231,23 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                     settings.getBoolean("serviceSSL", false),
                     settings.getBoolean("serviceAcceptAll", false)
             );
-            Control.connect(new Control.UpdateGroupsAndModulesCallback() {
-                @Override
-                public void groupsAndModulesUpdated(boolean success) {
-                    if (success) {
+            try {
+                Control.connect(new Control.DataUpdatedCallback() {
+                    @Override
+                    public void onRequestSuccess() {
                         mGroupsViewFragment.setGroups(Control.getGroups());
                         hideLogo();
                         //
                         if (_voiceControl == null) {
                             _voiceControl = new VoiceControl(hgcontext);
                         }
-                    } else {
+                        updateView();
+                        loaderHide();
+                        resume();
+                    }
+
+                    @Override
+                    public void onRequestError(Control.ApiRequestResult apiRequestResult) {
                         FragmentManager fm = getSupportFragmentManager();
                         if (!_isPaused) {
                             if (fm.findFragmentByTag("SETTINGS") == null || !fm.findFragmentByTag("SETTINGS").isVisible()) {
@@ -240,16 +260,22 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                                 }
                             }
                         }
+                        updateView();
+                        loaderHide();
                     }
-                    updateView();
-                    loaderHide();
-                }
-            }, this);
+                }, this);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void homegenieDisconnect() {
-        Control.disconnect();
+        try {
+            Control.disconnect();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void hideLogo() {
@@ -411,6 +437,12 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                 }
                 return true;
 
+            case R.id.action_hgplus:
+                browserIntent = new Intent(this, WebActivity.class);
+                browserIntent.putExtra("URL", Uri.parse("https://play.google.com/store/apps/details?id=com.glabs.homegenieplus").toString());
+                startActivity(browserIntent);
+                return true;
+
             case R.id.action_help:
                 browserIntent = new Intent(this, WebActivity.class);
                 browserIntent.putExtra("URL", Uri.parse("http://www.homegenie.it/docs").toString());
@@ -478,7 +510,8 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
                                 ((ModuleDialogFragment) widgetPopup).refreshView();
                             }
                         } catch (Exception e) {
-                            //Log.d("onSseEvent", e.getMessage());
+                            e.printStackTrace();
+                            Log.d("onSseEvent", e.getMessage());
                         }
                     }
                 }

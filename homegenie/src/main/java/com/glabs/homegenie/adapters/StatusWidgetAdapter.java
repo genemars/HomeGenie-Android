@@ -31,12 +31,11 @@ import android.widget.TextView;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
-import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
 import com.glabs.homegenie.components.FlowLayout;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -44,20 +43,20 @@ import java.util.Date;
  */
 public class StatusWidgetAdapter extends GenericWidgetAdapter {
 
-    public StatusWidgetAdapter(Module module) {
+    public StatusWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
 
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_status, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -65,20 +64,20 @@ public class StatusWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
-        FlowLayout propscontainer = (FlowLayout) _module.View.findViewById(R.id.propsContainer);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
+        FlowLayout propscontainer = (FlowLayout) _moduleHolder.View.findViewById(R.id.propsContainer);
 
-        title.setText(_module.getDisplayName());
-        subtitle.setText(_module.getDisplayAddress());
+        title.setText(_moduleHolder.Module.getDisplayName());
+        subtitle.setText(_moduleHolder.Module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
         Date lastUpdate = null;
-        LayoutInflater inflater = (LayoutInflater) _module.View.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        for (ModuleParameter p : _module.Properties) {
+        LayoutInflater inflater = (LayoutInflater) _moduleHolder.View.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        for (ModuleParameter p : _moduleHolder.Module.Properties) {
             if (p.Name.startsWith("StatusWidget.")) {
                 View propView = null;
                 for (int c = 0; c < propscontainer.getChildCount(); c++) {
@@ -107,14 +106,14 @@ public class StatusWidgetAdapter extends GenericWidgetAdapter {
         if (lastUpdate != null) {
             String updateTimestamp;
             //updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(lastUpdate);
-            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(lastUpdate) + " " +
-                    DateFormat.getTimeFormat(_module.View.getContext()).format(lastUpdate);
+            updateTimestamp = DateFormat.getDateFormat(_moduleHolder.View.getContext()).format(lastUpdate) + " " +
+                    DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(lastUpdate);
 
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }
 
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
         if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
@@ -126,7 +125,7 @@ public class StatusWidgetAdapter extends GenericWidgetAdapter {
                     image.setTag("CACHED");
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_module), image);
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_moduleHolder.Module), image);
         }
 
     }

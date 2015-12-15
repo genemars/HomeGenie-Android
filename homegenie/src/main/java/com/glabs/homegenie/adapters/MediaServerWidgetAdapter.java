@@ -29,7 +29,7 @@ import android.widget.TextView;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
-import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.MediaServerDialogFragment;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
@@ -39,20 +39,20 @@ import com.glabs.homegenie.widgets.ModuleDialogFragment;
  */
 public class MediaServerWidgetAdapter extends GenericWidgetAdapter {
 
-    public MediaServerWidgetAdapter(Module module) {
+    public MediaServerWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
 
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_upnpmedia, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -60,23 +60,23 @@ public class MediaServerWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
 
-        title.setText(_module.getDisplayName());
+        title.setText(_moduleHolder.Module.getDisplayName());
         infotext.setVisibility(View.GONE);
 
-        subtitle.setText(Control.getUpnpDisplayName(_module));
+        subtitle.setText(Control.getUpnpDisplayName(_moduleHolder.Module));
         //
-        if (_module.getParameter("UPnP.StandardDeviceType") != null && !_module.getParameter("UPnP.StandardDeviceType").Value.trim().equals("")) {
-            infotext.setText(_module.getParameter("UPnP.StandardDeviceType").Value);
+        if (_moduleHolder.Module.getParameter("UPnP.StandardDeviceType") != null && !_moduleHolder.Module.getParameter("UPnP.StandardDeviceType").Value.trim().equals("")) {
+            infotext.setText(_moduleHolder.Module.getParameter("UPnP.StandardDeviceType").Value);
             infotext.setVisibility(View.VISIBLE);
         }
         //
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
         if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
@@ -88,7 +88,7 @@ public class MediaServerWidgetAdapter extends GenericWidgetAdapter {
                     image.setTag("CACHED");
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_module), image);
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_moduleHolder.Module), image);
         }
 
     }

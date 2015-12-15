@@ -36,16 +36,14 @@ import android.widget.Spinner;
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.adapters.MediaFilesAdapter;
 import com.glabs.homegenie.client.Control;
-import com.glabs.homegenie.client.data.MediaEntry;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.MediaEntry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -118,9 +116,9 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
         });
         //
 
-        Control.getGroupModules("", new Control.GetGroupModulesCallback() {
+        Control.getGroupModules("", new Control.GroupModulesRequestCallback() {
             @Override
-            public void groupModulesUpdated(ArrayList<Module> modules) {
+            public void onRequestSuccess(ArrayList<Module> modules) {
                 ArrayAdapter<CharSequence> playtoitems = new ArrayAdapter<CharSequence>(_view.getContext(), android.R.layout.simple_spinner_item);
                 //
                 playtoitems.add("This device");
@@ -153,8 +151,13 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                 });
 
             }
+
+            @Override
+            public void onRequestError(Control.ApiRequestResult apiRequestResult) {
+
+            }
         });
-        //
+
         browseMediaFolder(lv);
 
         // Create the AlertDialog object and return it
@@ -175,15 +178,21 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
 
     private void playMediaTo() {
         // _selectedMedia
-        String apicall = _module.Domain + "/" + _module.Address + "/AvMedia.GetUri/" + _selectedMedia.Id + "/";
-        Control.callServiceApi(apicall, new Control.ServiceCallCallback() {
+        String apicall = _module.Domain + "/" + _module.Address + "/AvMedia.GetUri/" + Uri.encode(_selectedMedia.Id) + "/";
+        Control.apiRequest(apicall, new Control.ApiRequestCallback() {
             @Override
-            public void serviceCallCompleted(String mediauri) {
+            public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
+                String mediauri = apiRequestResult.ResponseBody;
+                try {
+                    JSONObject jsonResponse = new JSONObject(apiRequestResult.ResponseBody);
+                    mediauri = jsonResponse.getString("ResponseValue");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 // send to currently selected media renderer
                 if (_selectedMediaRender == null) // send to this device
                 {
                     Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(mediauri));
-
                     if (mediauri.endsWith(".mp3") ||
                             mediauri.endsWith(".m4a") ||
                             mediauri.endsWith(".wav")) {
@@ -205,23 +214,30 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
                             mediauri.endsWith(".ogg")) {
                         i.setType("video/*");
                     }
-
-                    _view.getContext().startActivity(i);
-                } else {
-                    String apicall;
                     try {
-                        apicall = _selectedMediaRender.Domain + "/" + _selectedMediaRender.Address + "/AvMedia.SetUri/" + URLEncoder.encode(mediauri, "UTF-8") + "/";
-                        Control.callServiceApi(apicall, new Control.ServiceCallCallback() {
-                            @Override
-                            public void serviceCallCompleted(String response) {
-                                // should play and popup current renderer controls dialog
-                                Control.callServiceApi(_selectedMediaRender.Domain + "/" + _selectedMediaRender.Address + "/AvMedia.Play/", null);
-                            }
-                        });
-                    } catch (UnsupportedEncodingException e) {
+                        _view.getContext().startActivity(i);
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
+                } else {
+                    String apicall;
+                    apicall = _selectedMediaRender.Domain + "/" + _selectedMediaRender.Address + "/AvMedia.SetUri/" + Uri.encode(mediauri) + "/";
+                    Control.apiRequest(apicall, new Control.ApiRequestCallback() {
+                        @Override
+                        public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
+                            // should play and popup current renderer controls dialog
+                            Control.apiRequest(_selectedMediaRender.Domain + "/" + _selectedMediaRender.Address + "/AvMedia.Play/", null);
+                        }
+                        @Override
+                        public void onRequestError(Control.ApiRequestResult apiRequestResult) {
+
+                        }
+                    });
                 }
+            }
+
+            @Override
+            public void onRequestError(Control.ApiRequestResult apiRequestResult) {
 
             }
         });
@@ -230,11 +246,12 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
 
 
     private void browseMediaFolder(final ListView lv) {
-        String apicall = _module.Domain + "/" + _module.Address + "/AvMedia.Browse/" + navigationStack.getLast() + "/";
-        Control.callServiceApi(apicall, new Control.ServiceCallCallback() {
+        String apicall = _module.Domain + "/" + _module.Address + "/AvMedia.Browse/" + Uri.encode(navigationStack.getLast()) + "/";
+        Control.apiRequest(apicall, new Control.ApiRequestCallback() {
             @Override
-            public void serviceCallCompleted(String jsonString) {
+            public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
 
+                String jsonString = apiRequestResult.ResponseBody;
                 if (jsonString == null || jsonString.equals("")) return;
                 //
                 ArrayList<MediaEntry> entries = new ArrayList<MediaEntry>();
@@ -263,7 +280,10 @@ public class MediaServerDialogFragment extends ModuleDialogFragment {
 
                 mAdapter.setEntries(entries);
             }
+            @Override
+            public void onRequestError(Control.ApiRequestResult apiRequestResult) {
 
+            }
         });
     }
 

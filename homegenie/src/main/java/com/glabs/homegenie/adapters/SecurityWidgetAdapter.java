@@ -32,30 +32,28 @@ import android.widget.ToggleButton;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
-import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
-
-import java.text.SimpleDateFormat;
 
 /**
  * Created by Gene on 05/01/14.
  */
 public class SecurityWidgetAdapter extends GenericWidgetAdapter {
 
-    public SecurityWidgetAdapter(Module module) {
+    public SecurityWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_security, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -63,23 +61,23 @@ public class SecurityWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
-        ToggleButton armbutton = (ToggleButton) _module.View.findViewById(R.id.armDisarm);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
+        ToggleButton armbutton = (ToggleButton) _moduleHolder.View.findViewById(R.id.armDisarm);
 
-        title.setText(_module.getDisplayName());
-        subtitle.setText(_module.getDisplayAddress());
+        title.setText(_moduleHolder.Module.getDisplayName());
+        subtitle.setText(_moduleHolder.Module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
         String updateTimestamp;
-        ModuleParameter statusLevel = _module.getParameter("Status.Level");
+        ModuleParameter statusLevel = _moduleHolder.Module.getParameter("Status.Level");
         if (statusLevel != null && statusLevel.Value != null && !statusLevel.Value.equals("")) {
             ///updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(statusLevel.UpdateTime);
-            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(statusLevel.UpdateTime) + " " +
-                    DateFormat.getTimeFormat(_module.View.getContext()).format(statusLevel.UpdateTime);
+            updateTimestamp = DateFormat.getDateFormat(_moduleHolder.View.getContext()).format(statusLevel.UpdateTime) + " " +
+                    DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(statusLevel.UpdateTime);
 
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
@@ -91,22 +89,22 @@ public class SecurityWidgetAdapter extends GenericWidgetAdapter {
         }
 
         String armedstat = "";
-        ModuleParameter armedStatus = _module.getParameter("HomeGenie.SecurityArmed");
+        ModuleParameter armedStatus = _moduleHolder.Module.getParameter("HomeGenie.SecurityArmed");
         if (armedStatus != null && armedStatus.Value != null && !armedStatus.Value.equals("")) {
             armedstat = (armedStatus.Value.equals("1") ? "Armed" : (statusLevel.Value.equals("1") ? "Arming" : "Disarmed"));
         }
-        _updatePropertyBox(_module.View, R.id.propArmedStatus, "Status", armedstat);
+        _updatePropertyBox(_moduleHolder.View, R.id.propArmedStatus, "Status", armedstat);
 
         armbutton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean armed) {
-                _module.setParameter("Status.Level", armed ? "1" : "0");
+                _moduleHolder.Module.setParameter("Status.Level", armed ? "1" : "0");
                 //refreshView();
-                _module.control("Control." + (armed ? "On" : "Off"), null);
+                _moduleHolder.Module.control("Control." + (armed ? "On" : "Off"), null);
             }
         });
 
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
         if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
@@ -118,7 +116,7 @@ public class SecurityWidgetAdapter extends GenericWidgetAdapter {
                     image.setTag("CACHED");
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_module), image);
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_moduleHolder.Module), image);
         }
 
     }

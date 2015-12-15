@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
-import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 
 import org.json.JSONArray;
@@ -43,24 +43,22 @@ import org.json.JSONObject;
  */
 public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
 
-
     private String _playbackstatus = "STOPPED";
     private String _currentmute = "0";
     private String _currenturi = "n/a";
     private String _currentposition = "00:00:00 / 00:00:00";
 
-    public MediaRendererWidgetAdapter(Module module) {
+    public MediaRendererWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
-
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_upnprenderer, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
             //
             Button play = (Button) v.findViewById(R.id.playButton);
             play.setOnClickListener(new View.OnClickListener() {
@@ -121,7 +119,7 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
                 }
             });
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -129,25 +127,25 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
         _updateRendererDisplayData();
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
 
-        title.setText(_module.getDisplayName());
+        title.setText(_moduleHolder.Module.getDisplayName());
         infotext.setVisibility(View.GONE);
 
-        subtitle.setText(Control.getUpnpDisplayName(_module));
+        subtitle.setText(Control.getUpnpDisplayName(_moduleHolder.Module));
         //
-        if (_module.getParameter("UPnP.StandardDeviceType") != null && !_module.getParameter("UPnP.StandardDeviceType").Value.trim().equals("")) {
-            infotext.setText(_module.getParameter("UPnP.StandardDeviceType").Value);
+        if (_moduleHolder.Module.getParameter("UPnP.StandardDeviceType") != null && !_moduleHolder.Module.getParameter("UPnP.StandardDeviceType").Value.trim().equals("")) {
+            infotext.setText(_moduleHolder.Module.getParameter("UPnP.StandardDeviceType").Value);
             infotext.setVisibility(View.VISIBLE);
         }
         //
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
         if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
@@ -159,37 +157,63 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
                     image.setTag("CACHED");
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_module), image);
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_moduleHolder.Module), image);
         }
     }
 
-
     private void _updateRendererDisplayData() {
-        final String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.GetTransportInfo", new Control.ServiceCallCallback() {
+        final String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.GetTransportInfo", new Control.ApiRequestCallback() {
             @Override
-            public void serviceCallCompleted(String response) {
+            public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
 
                 try {
 
-                    JSONObject jtinfo = new JSONArray(response).getJSONObject(0);
+                    JSONObject jtinfo = new JSONObject(apiRequestResult.ResponseBody);
                     String tstate = jtinfo.getString("CurrentTransportState");
                     _playbackstatus = tstate;
 
-                    Control.callServiceApi(apibase + "AvMedia.GetVolume", new Control.ServiceCallCallback() {
+                    Control.apiRequest(apibase + "AvMedia.GetVolume", new Control.ApiRequestCallback() {
                         @Override
-                        public void serviceCallCompleted(String value) {
+                        public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
 
-                            SeekBar volume = (SeekBar) _module.View.findViewById(R.id.volumeSlider);
-                            volume.setProgress(Integer.parseInt(value));
+                            SeekBar volume = (SeekBar) _moduleHolder.View.findViewById(R.id.volumeSlider);
+                            String volumeValue = "0";
+                            try {
+                                JSONObject jsonResponse = new JSONObject(apiRequestResult.ResponseBody);
+                                volumeValue = jsonResponse.getString("ResponseValue");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
 
-                            Control.callServiceApi(apibase + "AvMedia.GetMute", new Control.ServiceCallCallback() {
+                            volume.setProgress(Integer.parseInt(volumeValue));
+
+                            Control.apiRequest(apibase + "AvMedia.GetMute", new Control.ApiRequestCallback() {
                                 @Override
-                                public void serviceCallCompleted(String value) {
-                                    _currentmute = (value.toLowerCase().equals("true") ? "1" : "0");
+                                public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
+
+                                    String volumeMute = "False";
+                                    try {
+                                        JSONObject jsonResponse = new JSONObject(apiRequestResult.ResponseBody);
+                                        volumeMute = jsonResponse.getString("ResponseValue");
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    _currentmute = (volumeMute.toLowerCase().equals("true") ? "1" : "0");
                                     _updateControlStatus();
                                 }
+
+                                @Override
+                                public void onRequestError(Control.ApiRequestResult apiRequestResult) {
+
+                                }
                             });
+
+                        }
+
+                        @Override
+                        public void onRequestError(Control.ApiRequestResult apiRequestResult) {
 
                         }
                     });
@@ -197,16 +221,19 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onRequestError(Control.ApiRequestResult apiRequestResult) {
 
             }
         });
 
-
-        Control.callServiceApi(apibase + "AvMedia.GetPositionInfo", new Control.ServiceCallCallback() {
+        Control.apiRequest(apibase + "AvMedia.GetPositionInfo", new Control.ApiRequestCallback() {
             @Override
-            public void serviceCallCompleted(String response) {
+            public void onRequestSuccess(Control.ApiRequestResult apiRequestResult) {
                 try {
-                    JSONObject pinfo = new JSONArray(response).getJSONObject(0);
+                    JSONObject pinfo = new JSONObject(apiRequestResult.ResponseBody);
                     String trackuri = pinfo.getString("TrackURI");
                     String trackduration = pinfo.getString("TrackDuration");
                     String relposition = pinfo.getString("RelTime");
@@ -217,32 +244,36 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+            }
+            @Override
+            public void onRequestError(Control.ApiRequestResult apiRequestResult) {
+
             }
         });
 
     }
 
-
     private void _updateControlStatus() {
         if (_playbackstatus.equals("STOPPED")) {
-            _module.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_play);
-            _module.View.findViewById(R.id.stopButton).setVisibility(View.GONE);
+            _moduleHolder.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_play);
+            _moduleHolder.View.findViewById(R.id.stopButton).setVisibility(View.GONE);
         } else if (_playbackstatus.equals("PAUSED_PLAYBACK")) {
-            _module.View.findViewById(R.id.stopButton).setVisibility(View.VISIBLE);
-            _module.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_play);
+            _moduleHolder.View.findViewById(R.id.stopButton).setVisibility(View.VISIBLE);
+            _moduleHolder.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_play);
         } else if (_playbackstatus.equals("PLAYING")) {
-            _module.View.findViewById(R.id.stopButton).setVisibility(View.VISIBLE);
-            _module.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_pause);
+            _moduleHolder.View.findViewById(R.id.stopButton).setVisibility(View.VISIBLE);
+            _moduleHolder.View.findViewById(R.id.playButton).setBackgroundResource(R.drawable.ic_media_pause);
         }
         //
         if (_currentmute.equals("1")) {
-            _module.View.findViewById(R.id.muteButton).setBackgroundResource(android.R.drawable.ic_lock_silent_mode);
+            _moduleHolder.View.findViewById(R.id.muteButton).setBackgroundResource(android.R.drawable.ic_lock_silent_mode);
         } else {
-            _module.View.findViewById(R.id.muteButton).setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
+            _moduleHolder.View.findViewById(R.id.muteButton).setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
         }
         //
-        TextView trackuri = (TextView) _module.View.findViewById(R.id.mediaUri);
-        TextView trackpos = (TextView) _module.View.findViewById(R.id.mediaPosition);
+        TextView trackuri = (TextView) _moduleHolder.View.findViewById(R.id.mediaUri);
+        TextView trackpos = (TextView) _moduleHolder.View.findViewById(R.id.mediaPosition);
         trackuri.setText(_currenturi);
         trackpos.setText(_currentposition);
     }
@@ -251,72 +282,44 @@ public class MediaRendererWidgetAdapter extends GenericWidgetAdapter {
     private void _mediaPlay() {
         _playbackstatus = "PLAYING";
         _updateControlStatus();
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.Play", new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.Play", null);
     }
 
     private void _mediaPause() {
         _playbackstatus = "PAUSED_PLAYBACK";
         _updateControlStatus();
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.Pause", new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.Pause", null);
     }
 
     private void _mediaStop() {
         _playbackstatus = "STOPPED";
         _updateControlStatus();
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.Stop", new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.Stop", null);
     }
 
     private void _mediaNext() {
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.Next", new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.Next", null);
     }
 
     private void _mediaPrev() {
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.Prev", new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.Prev", null);
     }
 
     private void _mediaSetVolume(int i) {
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.SetVolume/" + i, new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.SetVolume/" + i, null);
     }
 
     private void _mediaSetMute(int i) {
         _currentmute = String.valueOf(i);
         _updateControlStatus();
-        String apibase = _module.Domain + "/" + _module.Address + "/";
-        Control.callServiceApi(apibase + "AvMedia.SetMute/" + _currentmute, new Control.ServiceCallCallback() {
-            @Override
-            public void serviceCallCompleted(String value) {
-            }
-        });
+        String apibase = _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/";
+        Control.apiRequest(apibase + "AvMedia.SetMute/" + _currentmute, null);
     }
 
 }

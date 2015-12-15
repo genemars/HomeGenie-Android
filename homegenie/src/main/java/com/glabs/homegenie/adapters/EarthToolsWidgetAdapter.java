@@ -32,28 +32,27 @@ import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
-
-import java.text.SimpleDateFormat;
 
 /**
  * Created by Gene on 05/01/14.
  */
 public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
 
-    public EarthToolsWidgetAdapter(Module module) {
+    public EarthToolsWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_earthtools, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -61,46 +60,46 @@ public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
 
-        title.setText(_module.getDisplayName());
-        subtitle.setText(_module.getDisplayAddress());
+        title.setText(_moduleHolder.Module.getDisplayName());
+        subtitle.setText(_moduleHolder.Module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
-        ModuleParameter sunriseParam = _module.getParameter("Astronomy.Sunrise");
+        ModuleParameter sunriseParam = _moduleHolder.Module.getParameter("Astronomy.Sunrise");
         String sunrise = "";
         if (sunriseParam != null) sunrise = sunriseParam.Value;
-        _updatePropertyBox(_module.View, R.id.propSunrise, "Sunrise", sunrise);
+        _updatePropertyBox(_moduleHolder.View, R.id.propSunrise, "Sunrise", sunrise);
         //
-        ModuleParameter sunsetParam = _module.getParameter("Astronomy.Sunset");
+        ModuleParameter sunsetParam = _moduleHolder.Module.getParameter("Astronomy.Sunset");
         String sunset = "";
         if (sunsetParam != null) sunset = sunsetParam.Value;
-        _updatePropertyBox(_module.View, R.id.propSunset, "Sunset", sunset);
+        _updatePropertyBox(_moduleHolder.View, R.id.propSunset, "Sunset", sunset);
         //
-        ModuleParameter latParam = _module.getParameter("ConfigureOptions.Latitude");
+        ModuleParameter latParam = _moduleHolder.Module.getParameter("ConfigureOptions.Latitude");
         String latitude = "";
         if (latParam != null) latitude = Module.getFormattedNumber(latParam.Value);
-        _updatePropertyBox(_module.View, R.id.propLatitude, "Lat.", latitude);
+        _updatePropertyBox(_moduleHolder.View, R.id.propLatitude, "Lat.", latitude);
         //
-        ModuleParameter longParam = _module.getParameter("ConfigureOptions.Longitude");
+        ModuleParameter longParam = _moduleHolder.Module.getParameter("ConfigureOptions.Longitude");
         String longitude = "";
         if (longParam != null) longitude = Module.getFormattedNumber(longParam.Value);
-        _updatePropertyBox(_module.View, R.id.propLongitude, "Long.", longitude);
+        _updatePropertyBox(_moduleHolder.View, R.id.propLongitude, "Long.", longitude);
         //
         if (sunriseParam != null) {
             //String updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
-            String updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(sunriseParam.UpdateTime) + " " +
-                    DateFormat.getTimeFormat(_module.View.getContext()).format(sunriseParam.UpdateTime);
+            String updateTimestamp = DateFormat.getDateFormat(_moduleHolder.View.getContext()).format(sunriseParam.UpdateTime) + " " +
+                    DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(sunriseParam.UpdateTime);
 
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }
         //
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
         if (image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override
@@ -112,7 +111,7 @@ public class EarthToolsWidgetAdapter extends GenericWidgetAdapter {
                     image.setTag("CACHED");
                 }
             });
-            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_module), image);
+            asyncDownloadTask.download(Control.getHgBaseHttpAddress() + getModuleIcon(_moduleHolder.Module), image);
         }
 
     }

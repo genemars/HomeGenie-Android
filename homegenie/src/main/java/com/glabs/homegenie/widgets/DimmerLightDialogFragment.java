@@ -90,13 +90,7 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 _module.setParameter("Status.Level", String.valueOf((double) seekBar.getProgress() / 100D));
                 refreshView();
-                _module.control("Control.Level/" + seekBar.getProgress(), new Control.ServiceCallCallback() {
-                    @Override
-                    public void serviceCallCompleted(String response) {
-                        // TODO: update group modules
-                        //refreshView();
-                    }
-                });
+                _module.control("Control.Level/" + seekBar.getProgress(), null);
             }
         });
 

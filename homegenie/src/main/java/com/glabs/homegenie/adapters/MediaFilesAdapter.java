@@ -33,7 +33,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.glabs.homegenie.R;
-import com.glabs.homegenie.client.data.MediaEntry;
+import com.glabs.homegenie.data.MediaEntry;
 
 import java.util.List;
 

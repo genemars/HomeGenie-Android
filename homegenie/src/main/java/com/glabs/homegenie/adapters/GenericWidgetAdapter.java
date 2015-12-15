@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,27 +35,38 @@ import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.ColorLightDialogFragment;
 import com.glabs.homegenie.widgets.ColorLightRGBDialogFragment;
 import com.glabs.homegenie.widgets.DimmerLightDialogFragment;
 import com.glabs.homegenie.widgets.ModuleDialogFragment;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Created by Gene on 05/01/14.
  */
 public class GenericWidgetAdapter {
 
-    protected Module _module;
+    protected ModuleHolder _moduleHolder;
 
     public GenericWidgetAdapter() {
     }
 
-    public GenericWidgetAdapter(Module module) {
-        _module = module;
+    public GenericWidgetAdapter(ModuleHolder module) {
+        _moduleHolder = module;
+        /*
+        _moduleHolder.Module.addObserver(new Observer() {
+            @Override
+            public void update(Observable observable, Object data) {
+                Log.d("MODULE EVENT", data.toString());
+                updateViewModel();
+            }
+        });
+        */
         module.Adapter = this;
     }
 
@@ -203,23 +215,23 @@ public class GenericWidgetAdapter {
     }
 
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_generic, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
 
     public ModuleDialogFragment getControlFragment() {
         ModuleDialogFragment fmWidget = null;
-        ModuleParameter widget = _module.getParameter("Widget.DisplayModule");
+        ModuleParameter widget = _moduleHolder.Module.getParameter("Widget.DisplayModule");
         Module.DeviceTypes devtype = Module.DeviceTypes.Generic;
         try {
-            devtype = Enum.valueOf(Module.DeviceTypes.class, _module.DeviceType);
+            devtype = Enum.valueOf(Module.DeviceTypes.class, _moduleHolder.Module.DeviceType);
         } catch (Exception e) {
             // TODO handle exception
         }
@@ -245,10 +257,10 @@ public class GenericWidgetAdapter {
     }
 
     public void updateViewModel() {
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        View convertView = _module.View;
-        Module module = _module;
+        View convertView = _moduleHolder.View;
+        Module module = _moduleHolder.Module;
 
         TextView title = (TextView) convertView.findViewById(R.id.titleText);
         TextView subtitle = (TextView) convertView.findViewById(R.id.subtitleText);
@@ -275,7 +287,7 @@ public class GenericWidgetAdapter {
             } else {
                 status = "off";
             }
-            if (_module.DeviceType.equals("Shutter")) {
+            if (module.DeviceType.equals("Shutter")) {
                 if (status.equals("off")) {
                     status = "Closed";
                 } else if (status.equals("on")) {
@@ -402,8 +414,8 @@ public class GenericWidgetAdapter {
         //
         if (updateDate != null) {
             //updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(updateDate);
-            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(updateDate) + " " +
-                    DateFormat.getTimeFormat(_module.View.getContext()).format(updateDate);
+            updateTimestamp = DateFormat.getDateFormat(_moduleHolder.View.getContext()).format(updateDate) + " " +
+                    DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(updateDate);
 
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);

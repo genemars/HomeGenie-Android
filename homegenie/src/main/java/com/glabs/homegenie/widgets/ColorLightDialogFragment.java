@@ -135,7 +135,7 @@ public class ColorLightDialogFragment extends ModuleDialogFragment {
                         // TODO parsing errors
                     }
                 }
-//                _levelBar.setProgress((int)Math.round(_module.getDoubleValue(levelParam.Value) * 100));
+//                _levelBar.setProgress((int)Math.round(_moduleHolder.getDoubleValue(levelParam.Value) * 100));
             }
         });
     }

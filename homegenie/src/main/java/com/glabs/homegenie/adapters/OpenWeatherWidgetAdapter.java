@@ -32,6 +32,7 @@ import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 
 import java.util.Date;
@@ -41,19 +42,19 @@ import java.util.Date;
  */
 public class OpenWeatherWidgetAdapter extends GenericWidgetAdapter {
 
-    public OpenWeatherWidgetAdapter(Module module) {
+    public OpenWeatherWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_wunderground, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -61,81 +62,81 @@ public class OpenWeatherWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infotext = (TextView) _module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infotext = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
 
-        title.setText(_module.getDisplayName());
-        subtitle.setText(_module.getDisplayAddress());
+        title.setText(_moduleHolder.Module.getDisplayName());
+        subtitle.setText(_moduleHolder.Module.getDisplayAddress());
         infotext.setVisibility(View.GONE);
         //
-        ModuleParameter sunriseParam = _module.getParameter("jkUtils.OpenWeatherMap.Sys.Sunrise");
+        ModuleParameter sunriseParam = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Sys.Sunrise");
         String sunrise = "";
         if (sunriseParam != null && !sunriseParam.Value.equals("")) {
-            sunrise = DateFormat.getTimeFormat(_module.View.getContext()).format(new Date(Long.parseLong(sunriseParam.Value)*1000));
+            sunrise = DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(new Date(Long.parseLong(sunriseParam.Value)*1000));
         }
-        _updatePropertyBox(_module.View, R.id.propSunrise, "Sunrise", sunrise);
+        _updatePropertyBox(_moduleHolder.View, R.id.propSunrise, "Sunrise", sunrise);
         //
-        ModuleParameter sunsetParam = _module.getParameter("jkUtils.OpenWeatherMap.Sys.Sunset");
+        ModuleParameter sunsetParam = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Sys.Sunset");
         String sunset = "";
         if (sunriseParam != null && !sunsetParam.Value.equals("")) {
-            sunset = DateFormat.getTimeFormat(_module.View.getContext()).format(new Date(Long.parseLong(sunsetParam.Value)*1000));
+            sunset = DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(new Date(Long.parseLong(sunsetParam.Value)*1000));
         }
-        _updatePropertyBox(_module.View, R.id.propSunset, "Sunset", sunset);
+        _updatePropertyBox(_moduleHolder.View, R.id.propSunset, "Sunset", sunset);
         //
-        ModuleParameter displayCelsius = _module.getParameter("ConfigureOptions.Custom Display Units");
-        ModuleParameter sensorTemperature = _module.getParameter("jkUtils.OpenWeatherMap.Main.Temp");
+        ModuleParameter displayCelsius = _moduleHolder.Module.getParameter("ConfigureOptions.Custom Display Units");
+        ModuleParameter sensorTemperature = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Main.Temp");
         String temperature = "";
         if (displayCelsius != null && displayCelsius.Value.toLowerCase().equals("true"))
         {
             if (sensorTemperature != null)
                 temperature = Module.getFormattedNumber(sensorTemperature.Value);
-            _updatePropertyBox(_module.View, R.id.propTemperature, "Temp.℃", temperature);
+            _updatePropertyBox(_moduleHolder.View, R.id.propTemperature, "Temp.℃", temperature);
         }
         else
         {
             if (sensorTemperature != null)
                 temperature = Module.getFormattedNumber(sensorTemperature.Value);
-            _updatePropertyBox(_module.View, R.id.propTemperature, "Temp.℉", temperature);
+            _updatePropertyBox(_moduleHolder.View, R.id.propTemperature, "Temp.℉", temperature);
         }
         //
-        ModuleParameter sensorPressure = _module.getParameter("jkUtils.OpenWeatherMap.Main.Pressure");
+        ModuleParameter sensorPressure = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Main.Pressure");
         String pressure = "";
         if (sensorPressure != null) pressure = Module.getFormattedNumber(sensorPressure.Value);
-        _updatePropertyBox(_module.View, R.id.propPressure, "Press.mb", pressure);
+        _updatePropertyBox(_moduleHolder.View, R.id.propPressure, "Press.mb", pressure);
         //
-        ModuleParameter sensorPrecipitations = _module.getParameter("jkUtils.OpenWeatherMap.Rain.H1");
+        ModuleParameter sensorPrecipitations = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Rain.H1");
         String precipitations = "";
         if (sensorPrecipitations != null)
             precipitations = Module.getFormattedNumber(sensorPrecipitations.Value);
-        _updatePropertyBox(_module.View, R.id.propPrecipitations, "Precip.mm/h", precipitations);
+        _updatePropertyBox(_moduleHolder.View, R.id.propPrecipitations, "Precip.mm/h", precipitations);
         //
-        ModuleParameter condLocation = _module.getParameter("jkUtils.OpenWeatherMap.Name");
+        ModuleParameter condLocation = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Name");
         String location = "";
         if (condLocation != null) location = condLocation.Value;
-        TextView tv1 = (TextView) _module.View.findViewById(R.id.condLocation);
+        TextView tv1 = (TextView) _moduleHolder.View.findViewById(R.id.condLocation);
         tv1.setText(location);
         //
-        ModuleParameter condDescription = _module.getParameter("jkUtils.OpenWeatherMap.Weather.Description");
+        ModuleParameter condDescription = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Weather.Description");
         String description = "";
         if (condDescription != null) description = condDescription.Value;
-        TextView tv2 = (TextView) _module.View.findViewById(R.id.condDescription);
+        TextView tv2 = (TextView) _moduleHolder.View.findViewById(R.id.condDescription);
         tv2.setText(description);
 
         String updateTimestamp = "";
         if (sunriseParam != null) {
             //updateTimestamp = new SimpleDateFormat("MMM y E dd - HH:mm:ss").format(sunriseParam.UpdateTime);
-            updateTimestamp = DateFormat.getDateFormat(_module.View.getContext()).format(sunriseParam.UpdateTime) + " " +
-                    DateFormat.getTimeFormat(_module.View.getContext()).format(sunriseParam.UpdateTime);
+            updateTimestamp = DateFormat.getDateFormat(_moduleHolder.View.getContext()).format(sunriseParam.UpdateTime) + " " +
+                    DateFormat.getTimeFormat(_moduleHolder.View.getContext()).format(sunriseParam.UpdateTime);
 
             infotext.setText(updateTimestamp);
             infotext.setVisibility(View.VISIBLE);
         }
 
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
-        ModuleParameter iconUrl = _module.getParameter("jkUtils.OpenWeatherMap.Weather.Icon");
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
+        ModuleParameter iconUrl = _moduleHolder.Module.getParameter("jkUtils.OpenWeatherMap.Weather.Icon");
         if (iconUrl != null && image.getTag() == null && !(image.getDrawable() instanceof AsyncImageDownloadTask.DownloadedDrawable)) {
             AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, true, new AsyncImageDownloadTask.ImageDownloadListener() {
                 @Override

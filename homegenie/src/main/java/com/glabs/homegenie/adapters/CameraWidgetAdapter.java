@@ -32,6 +32,7 @@ import com.glabs.homegenie.R;
 import com.glabs.homegenie.client.Control;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.util.AsyncImageDownloadTask;
 import com.glabs.homegenie.widgets.CameraControlActivity;
 
@@ -41,20 +42,20 @@ import com.glabs.homegenie.widgets.CameraControlActivity;
 public class CameraWidgetAdapter extends GenericWidgetAdapter {
 
 
-    public CameraWidgetAdapter(Module module) {
+    public CameraWidgetAdapter(ModuleHolder module) {
         super(module);
     }
 
 
     @Override
     public View getView(LayoutInflater inflater) {
-        View v = _module.View;
+        View v = _moduleHolder.View;
         if (v == null) {
             v = inflater.inflate(R.layout.widget_item_camera, null);
-            _module.View = v;
-            v.setTag(_module);
+            _moduleHolder.View = v;
+            v.setTag(_moduleHolder);
         } else {
-            v = _module.View;
+            v = _moduleHolder.View;
         }
         return v;
     }
@@ -62,25 +63,25 @@ public class CameraWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public void updateViewModel() {
 
-        if (_module.View == null) return;
+        if (_moduleHolder.View == null) return;
 
-        TextView title = (TextView) _module.View.findViewById(R.id.titleText);
-        TextView subtitle = (TextView) _module.View.findViewById(R.id.subtitleText);
-        TextView infoText = (TextView) _module.View.findViewById(R.id.infoText);
+        TextView title = (TextView) _moduleHolder.View.findViewById(R.id.titleText);
+        TextView subtitle = (TextView) _moduleHolder.View.findViewById(R.id.subtitleText);
+        TextView infoText = (TextView) _moduleHolder.View.findViewById(R.id.infoText);
 
-        title.setText(_module.getDisplayName());
-        subtitle.setText(_module.getDisplayAddress());
+        title.setText(_moduleHolder.Module.getDisplayName());
+        subtitle.setText(_moduleHolder.Module.getDisplayAddress());
         infoText.setVisibility(View.GONE);
         //
         // get Image.URL property
-        String imagePath = "/api/" + _module.Domain + "/" + _module.Address + "/Camera.GetPicture/";
-        ModuleParameter imageUrl = _module.getParameter("Image.URL");
+        String imagePath = "/api/" + _moduleHolder.Module.Domain + "/" + _moduleHolder.Module.Address + "/Camera.GetPicture/";
+        ModuleParameter imageUrl = _moduleHolder.Module.getParameter("Image.URL");
         if (imageUrl != null && !imageUrl.Value.equals(""))
         {
             imagePath = imageUrl.Value;
         }
         //
-        final ImageView image = (ImageView) _module.View.findViewById(R.id.iconImage);
+        final ImageView image = (ImageView) _moduleHolder.View.findViewById(R.id.iconImage);
         AsyncImageDownloadTask asyncDownloadTask = new AsyncImageDownloadTask(image, false, new AsyncImageDownloadTask.ImageDownloadListener() {
             @Override
             public void imageDownloadFailed(String imageUrl) {
@@ -98,7 +99,7 @@ public class CameraWidgetAdapter extends GenericWidgetAdapter {
     @Override
     public Intent getControlActivityIntent(Module module) {
         CameraControlActivity._module = module;
-        return new Intent(_module.View.getContext(), CameraControlActivity.class);
+        return new Intent(_moduleHolder.View.getContext(), CameraControlActivity.class);
     }
 
 }

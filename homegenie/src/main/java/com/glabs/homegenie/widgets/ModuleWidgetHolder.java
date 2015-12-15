@@ -36,6 +36,7 @@ import com.glabs.homegenie.adapters.StatusWidgetAdapter;
 import com.glabs.homegenie.adapters.WundergroundWidgetAdapter;
 import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.data.ModuleParameter;
+import com.glabs.homegenie.data.ModuleHolder;
 
 /**
  * Created by Gene on 05/01/14.
@@ -44,28 +45,28 @@ public class ModuleWidgetHolder {
 
     private GenericWidgetAdapter _adapter;
 
-    public ModuleWidgetHolder(Module module) {
-        ModuleParameter widgetParam = module.getParameter("Widget.DisplayModule");
+    public ModuleWidgetHolder(ModuleHolder moduleHolder) {
+        ModuleParameter widgetParam = moduleHolder.Module.getParameter("Widget.DisplayModule");
         if (widgetParam != null && widgetParam.Value.equals("weather/earthtools/sundata")) {
-            _adapter = new EarthToolsWidgetAdapter(module);
+            _adapter = new EarthToolsWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("jkUtils/SolarAltitude/SolarAltitude")) {
-            _adapter = new SolarAltitudeWidgetAdapter(module);
+            _adapter = new SolarAltitudeWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("jkUtils/OpenWeatherMap/OpenWeatherMap")) {
-            _adapter = new OpenWeatherWidgetAdapter(module);
+            _adapter = new OpenWeatherWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("weather/wunderground/conditions")) {
-            _adapter = new WundergroundWidgetAdapter(module);
+            _adapter = new WundergroundWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/securitysystem")) {
-            _adapter = new SecurityWidgetAdapter(module);
+            _adapter = new SecurityWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/status")) {
-            _adapter = new StatusWidgetAdapter(module);
+            _adapter = new StatusWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/camerainput")) {
-            _adapter = new CameraWidgetAdapter(module);
+            _adapter = new CameraWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/mediaserver")) {
-            _adapter = new MediaServerWidgetAdapter(module);
+            _adapter = new MediaServerWidgetAdapter(moduleHolder);
         } else if (widgetParam != null && widgetParam.Value.equals("homegenie/generic/mediareceiver")) {
-            _adapter = new MediaRendererWidgetAdapter(module);
+            _adapter = new MediaRendererWidgetAdapter(moduleHolder);
         } else {
-            _adapter = new GenericWidgetAdapter(module);
+            _adapter = new GenericWidgetAdapter(moduleHolder);
         }
     }
 

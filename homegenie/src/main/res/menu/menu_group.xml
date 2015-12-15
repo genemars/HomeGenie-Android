@@ -18,6 +18,12 @@
                 android:menuCategory="secondary"
                 android:title="Admin"/>
             <item
+                android:id="@+id/action_hgplus"
+                android:showAsAction="ifRoom"
+                android:icon="@drawable/ic_action_download"
+                android:menuCategory="secondary"
+                android:title="HomeGenie Plus"/>
+            <item
                 android:id="@+id/action_help"
                 android:showAsAction="ifRoom"
                 android:icon="@drawable/ic_action_help"

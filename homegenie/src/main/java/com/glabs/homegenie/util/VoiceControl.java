@@ -201,12 +201,7 @@ public class VoiceControl implements RecognitionListener {
                     for (int t = 0; t < types.length; t++) {
 
                         if (module.DeviceType != null && types[t].toLowerCase().equals(module.DeviceType.toLowerCase())) {
-                            module.control(command, new Control.ServiceCallCallback() {
-                                @Override
-                                public void serviceCallCompleted(String response) {
-
-                                }
-                            });
+                            module.control(command, null);
                             continueparsing = true;
                             //
                             try {
@@ -222,12 +217,7 @@ public class VoiceControl implements RecognitionListener {
                 Module module = searchSubjectMatch(group, nextcommand.StartIndex);
                 //
                 if (module != null && !command.equals("")) {
-                    module.control(command, new Control.ServiceCallCallback() {
-                        @Override
-                        public void serviceCallCompleted(String response) {
-
-                        }
-                    });
+                    module.control(command, null);
                     continueparsing = true;
                     //
                     try {
@@ -497,7 +487,7 @@ public class VoiceControl implements RecognitionListener {
                 message = "Not recognised";
                 break;
         }
-        Toast.makeText(_hgcontext.getApplicationContext(), "Recognizer: " + message, 10000).show();
+        Toast.makeText(_hgcontext.getApplicationContext(), "Recognizer: " + message, Toast.LENGTH_SHORT).show();
         _recognizer.destroy();
         _recognizer = null;
     }
@@ -512,7 +502,7 @@ public class VoiceControl implements RecognitionListener {
                     results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
             String msg = "";
             for (String s : heard) {
-                Toast.makeText(_hgcontext.getApplicationContext(), "Executing: " + s, 20000).show();
+                Toast.makeText(_hgcontext.getApplicationContext(), "Executing: " + s, Toast.LENGTH_LONG).show();
                 interpretInput(s);
 //                msg += s;
                 break;

@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import com.glabs.homegenie.client.data.Module;
+import com.glabs.homegenie.data.ModuleHolder;
 import com.glabs.homegenie.widgets.ModuleWidgetHolder;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class ModulesAdapter extends ArrayAdapter<Module> {
         LayoutInflater inflater = (LayoutInflater) getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        Module module = _modules.get(position);
+        ModuleHolder module = new ModuleHolder(_modules.get(position));
         ModuleWidgetHolder widget = new ModuleWidgetHolder(module);
         convertView = widget.getView(inflater);
 
