@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -131,6 +132,13 @@ public class StartActivity extends FragmentActivity implements EventSourceListen
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_start);
+
+        // fix to "Network on main thread issue"
+        if (android.os.Build.VERSION.SDK_INT > 9)
+        {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
 
         mLoadingCircle = (LinearLayout) findViewById(R.id.loadingCircle);
         mLoaderText = (TextView) findViewById(R.id.tapoptions);
