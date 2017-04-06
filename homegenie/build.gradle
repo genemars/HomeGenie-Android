@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.1'
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 11
+        minSdkVersion 9
+        targetSdkVersion 25
     }
     buildTypes {
         release {
@@ -20,7 +20,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-v4:21.0.0'
+    compile 'com.android.support:support-v4:25.3.1'
     compile 'io.netty:netty-all:4.0.31.Final'
     compile project(':colorpicker')
     compile project(':viewpagerindicator')

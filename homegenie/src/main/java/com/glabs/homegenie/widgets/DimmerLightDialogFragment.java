@@ -78,6 +78,9 @@ public class DimmerLightDialogFragment extends ModuleDialogFragment {
         _levelBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean b) {
+                // the following "if" is to prevent occasional null pointer exception occurring on some devices, though "_module" shouldn't be null at this point
+                if (_module == null)
+                    return;
                 _module.setParameter("Status.Level", String.valueOf((double) seekBar.getProgress() / 100D));
                 refreshView();
             }

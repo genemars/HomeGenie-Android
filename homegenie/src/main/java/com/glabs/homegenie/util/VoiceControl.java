@@ -21,6 +21,7 @@
 
 package com.glabs.homegenie.util;
 
+import android.accounts.NetworkErrorException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -42,7 +43,7 @@ import com.glabs.homegenie.client.data.Module;
 import com.glabs.homegenie.client.httprequest.HttpRequest;
 import com.glabs.homegenie.client.httprequest.HttpRequest.HttpRequestException;
 
-import org.apache.http.client.HttpResponseException;
+//import org.apache.http.client.HttpResponseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -64,11 +65,7 @@ public class VoiceControl implements RecognitionListener {
 
     private static String handleResponse(HttpRequest request) {
         if (request.code() < 200 || request.code() >= 300) {
-            try {
-                throw new HttpResponseException(request.code(), request.message());
-            } catch (HttpResponseException e) {
-                e.printStackTrace();
-            }
+            // TODO: should throw/report the error
         }
         return request.body();
     }
@@ -488,8 +485,10 @@ public class VoiceControl implements RecognitionListener {
                 break;
         }
         Toast.makeText(_hgcontext.getApplicationContext(), "Recognizer: " + message, Toast.LENGTH_SHORT).show();
-        _recognizer.destroy();
-        _recognizer = null;
+        if (_recognizer != null) {
+            _recognizer.destroy();
+            _recognizer = null;
+        }
     }
 
     @Override
